@@ -1,0 +1,311 @@
+  !##############################################################################
+  ! module vacusr - sim1 ! setvac -d=22 -g=204,204 -p=hdadiab -u=sim1
+  
+  
+  INCLUDE:vacusr.gravity.t
+  INCLUDE:vacusr.viscosity.t
+
+  !=============================================================================
+  SUBROUTINE specialini(ix^L,w)
+
+    INCLUDE 'vacdef.f'
+
+    INTEGER:: ix^L
+    DOUBLE PRECISION:: w(ixG^T,1:nw)
+
+    RETURN
+  END SUBROUTINE specialini
+
+
+  !=============================================================================
+  SUBROUTINE specialsource(qdt,ixI^L,ixO^L,iws,qtC,wCT,qt,w)
+
+    INCLUDE 'vacdef.f'
+
+    INTEGER:: ixI^L,ixO^L,iws(niw_)
+    DOUBLE PRECISION:: qdt,qtC,qt,wCT(ixG^T,nw),w(ixG^T,nw)
+    DOUBLE PRECISION:: fdt,fdthalf2
+
+    DOUBLE PRECISION:: pre(ixG^T),tem(ixG^T),kapr(ixG^T),so(ixG^T),flux(ixG^T)
+    DOUBLE PRECISION:: tau(ixG^T),ine(ixG^T)
+
+    DOUBLE PRECISION:: preg(ixG^T),pret(ixG^T)
+
+    INTEGER:: rix_1,i,j
+    DOUBLE PRECISION:: mol_0, rrr_
+
+    DOUBLE PRECISION:: fsokr,avgflux
+
+    INTEGER:: iw,iiw,iix_1
+
+    INTEGER:: ix_1,ix_2,ix_3
+
+
+    DOUBLE PRECISION:: s_period,xc1,xc2,xc3,s_z,xxmax, yymax, zzmax
+    DOUBLE PRECISION:: xc1Mm,xc2Mm,xc3Mm
+    DOUBLE PRECISION:: xx, yy, zz
+    DOUBLE PRECISION:: r(ixG^T), vvx(ixG^T), vvy(ixG^T), vvz(ixG^T)
+    DOUBLE PRECISION:: bbx(ixG^T), bby(ixG^T)
+    DOUBLE PRECISION:: Vphi, bphi, Vr, tt0, ddt, AA, max_vx, max_vy
+
+    !*****************
+    DOUBLE PRECISION:: t01,t02,a1,a2,s1,s2,sf,rad,rfc,sdep,tdeps,tdep, tdepc, sigma2
+    DOUBLE PRECISION:: delta_z, delta_x, delta_y, exp_x, exp_y, exp_z, exp_xyz
+    !-----------------------------------------------------------------------------
+
+    eqpar(eta_)=0.d0
+    eqpar(nu_)=1.0d0
+    
+    CALL addsource_grav(qdt,ixI^L,ixO^L,iws,qtC,wCT,qt,w)
+    
+    IF(ABS(eqpar(nu_))>smalldouble)&
+         CALL addsource_visc(qdt,ixI^L,ixO^L,iws,qtC,wCT,qt,w)
+
+    vvx(ixG^T) = 0.d0
+    vvy(ixG^T) = 0.d0
+    vvz(ixG^T) = 0.d0
+
+
+    xc1Mm=0.1   !Mm        z axis
+    xc2Mm=1.0 !0.99d0  !Mm        x axis
+    xc3Mm=1.0 !0.99d0  !Mm        y axis
+
+
+    xc1=xc1Mm*1.0d6  !m        z axis
+    xc2=xc2Mm*1.0d6  !m        x axis
+    xc3=xc3Mm*1.0d6  !m        y axis
+
+    xxmax=2.d6
+    yymax=2.d6
+    zzmax=2.d6
+    
+    delta_z=0.05d6
+    delta_x=0.1d6
+    delta_y=0.1d6
+
+ !   AA=80000.d0 ! ~2km/s hor/vert
+
+    AA=3000.d0
+
+
+    s_period=30.d0
+
+    tdep=SIN(qt*2.d0*pi/s_period)!*EXP(-(qt/(4.d0 * s_period))**2.d0) 
+    !PRINT*, "tdep==",tdep
+    !tdep=sin(qt*2.d0*pi/s_period) 
+
+    !tdep=1.d0 ! continious rotation
+
+    DO ix_1=ixImin1,ixImax1
+       DO ix_2=ixImin2,ixImax2
+          DO ix_3=ixImin3,ixImax3
+
+
+             xx=x(ix_1,ix_2,ix_3,2)-xc2
+             yy=x(ix_1,ix_2,ix_3,3)-xc3
+             zz=x(ix_1,ix_2,ix_3,1)-xc1  
+             
+             exp_z = EXP(-zz**2.d0/(delta_z**2.d0))
+             exp_x = EXP(-xx**2.d0/(delta_x**2.d0))
+             exp_y = EXP(-yy**2.d0/(delta_y**2.d0))
+
+             exp_xyz=exp_x*exp_y*exp_z
+             
+             !vvz(ix_1,ix_2,ix_3)=AA*zz/zzmax*exp_xyz*tdep  
+!             vvx(ix_1,ix_2,ix_3)=AA*yy/yymax*exp_xyz*tdep    
+             !vvy(ix_1,ix_2,ix_3)=-AA*xx/xxmax*exp_xyz*tdep
+
+             
+             vvx(ix_1,ix_2,ix_3)=(AA*yy/yymax)/SQRT((xx/xxmax)**2+(yy/yymax)**2)*exp_xyz*tdep    
+             vvy(ix_1,ix_2,ix_3)=(-AA*xx/xxmax)/SQRT((xx/xxmax)**2+(yy/yymax)**2)*exp_xyz*tdep  
+
+          ENDDO
+       ENDDO
+    ENDDO
+
+
+    DO ix_1=ixImin1,ixImax1
+       DO ix_2=ixImin2,ixImax2
+          DO ix_3=ixImin3,ixImax3
+             
+            !w(ix_1,ix_2,ix_3,m1_)=w(ix_1,ix_2,ix_3,m1_)+(w(ix_1,ix_2,ix_3,rho_)+w(ix_1,ix_2,ix_3,rhob_))*vvz(ix_1,ix_2,ix_3)*qdt
+             
+             w(ix_1,ix_2,ix_3,m2_)=w(ix_1,ix_2,ix_3,m2_)+(w(ix_1,ix_2,ix_3,rho_)+w(ix_1,ix_2,ix_3,rhob_))*vvx(ix_1,ix_2,ix_3)*qdt
+             
+             w(ix_1,ix_2,ix_3,m3_)= w(ix_1,ix_2,ix_3,m3_)+(w(ix_1,ix_2,ix_3,rho_)+w(ix_1,ix_2,ix_3,rhob_))*vvy(ix_1,ix_2,ix_3)*qdt
+
+             
+             w(ix_1,ix_2,ix_3,e_)=w(ix_1,ix_2,ix_3,e_)+(w(ix_1,ix_2,ix_3,rho_)+w(ix_1,ix_2,ix_3,rhob_))*(vvx(ix_1,ix_2,ix_3)**2.d0 + vvy(ix_1,ix_2,ix_3)**2.d0 + vvz(ix_1,ix_2,ix_3)**2.d0)*qdt/2.d0
+
+
+          ENDDO
+       ENDDO
+    ENDDO
+
+
+    {^IFMPI IF (ipe.EQ.0)} WRITE(*,*) '***time=',qt
+
+  END SUBROUTINE specialsource
+
+
+
+!=============================================================================
+SUBROUTINE specialbound(qt,ix^L,iw,iB,w)
+  INCLUDE 'vacdef.f'
+
+  INTEGER:: ix_1,ix_2
+
+  INTEGER:: iw^LIM,idim^LIM
+  DOUBLE PRECISION:: qt,w(ixG^T,1:nw)
+  INTEGER:: ix,ix^D,ixe,ixf,ix^L,ixpair^L,idim,iw,iB
+
+  CALL die('not defined')
+  RETURN
+END SUBROUTINE specialbound
+
+!=============================================================================
+SUBROUTINE getdt_special(w,ix^L)
+
+  ! If the Coriolis force is made very strong it may require time step limiting,
+  ! but this is not implemented here.
+
+  INCLUDE 'vacdef.f'
+  DOUBLE PRECISION:: w(ixG^T,nw)
+  INTEGER:: ix^L
+  !----------------------------------------------------------------------------
+
+  !call getdt_diff(w,ix^L)
+
+  IF(ABS(eqpar(nu_))>smalldouble)&
+       CALL getdt_visc(w,ix^L)
+
+  CALL getdt_grav(w,ix^L)
+
+  RETURN
+END SUBROUTINE getdt_special
+
+!=============================================================================
+SUBROUTINE specialeta(w,ix^L,idirmin)
+
+  INCLUDE 'vacdef.f'
+
+  DOUBLE PRECISION:: w(ixG^T,nw)
+  INTEGER:: ix^L,idirmin
+!------------------------------------------------------------------------------
+
+  STOP 'specialeta is not defined'
+END SUBROUTINE specialeta
+
+!------------------------------------------------------------------------------
+SUBROUTINE savefilelog_special(qunit,w,ix^L)
+  
+  ! This is a save log file routine to calculate and save out Vpar Vperp and Vaz
+  ! It mimics savefileout_bin to mantain compatibility with usual readin routines
+  
+  INCLUDE 'vacdef.f'
+
+  INTEGER:: qunit,ix^L,idim,iw,ndimout
+  DOUBLE PRECISION :: w(ixG^T,nw),vpar(ixG^T),vperp(ixG^T),vaz(ixG^T)
+  DOUBLE PRECISION :: Bz(ixG^T), By(ixG^T), Bx(ixG^T), Vx(ixG^T), Vy(ixG^T), Vz(ixG^T),DelBz(ixG^T), DelBy(ixG^T), DelBx(ixG^T),rhot(ixG^T),DelBxB(ixG^T,3),B(ixG^T)
+  DOUBLE PRECISION :: Velout(ixG^T,ndim)
+  LOGICAL:: fileopen
+  
+  INTEGER :: ix_1,ix_2,ix_3
+  CHARACTER*10:: itstring
+  CHARACTER*3 :: x1
+  CALL die("this dont work")
+  !===========================================================================
+  !Calculate the specials to save out
+  !===========================================================================
+  !Total density
+  rhot = w(ixG^T,rhob_) + w(ixG^T,rho_)
+
+  !Make velocity Components
+  vz = w(ixG^T,m1_) / rhot(ixG^T)
+  vx = w(ixG^T,m2_) / rhot(ixG^T)
+  vy = w(ixG^T,m3_) / rhot(ixG^T)
+  
+  !Total Magnetic Field
+  Bz = w(ixG^T,b1_) + w(ixG^T,bg1_)
+  Bx = w(ixG^T,b2_) + w(ixG^T,bg2_)
+  By = w(ixG^T,b3_) + w(ixG^T,bg3_)
+
+  B = SQRT(Bz**2 + Bx**2 + By**2)
+  
+  !Calculate DelB
+  DelBz = B(ixG^T) / dx(ixG^T,1)
+  DelBx = B(ixG^T) / dx(ixG^T,2)
+  DelBy = B(ixG^T) / dx(ixG^T,3)
+
+
+
+  DO ix_1=ixGlo1,ixGhi1
+     DO ix_2=ixGlo2,ixGhi2
+        DO ix_3=ixGlo3,ixGhi3
+
+           DelBxB(ix_1,ix_2,ix_3,:) = cross(DelBz(ix_1,ix_2,ix_3),DelBx(ix_1,ix_2,ix_3),DelBy(ix_1,ix_2,ix_3),Bz(ix_1,ix_2,ix_3),Bx(ix_1,ix_2,ix_3),By(ix_1,ix_2,ix_3))
+           
+           !Parallel velocity is V.B
+           Vpar(ix_1,ix_2,ix_3) = Bz(ix_1,ix_2,ix_3) * Vz(ix_1,ix_2,ix_3) + Bx(ix_1,ix_2,ix_3) * Vx(ix_1,ix_2,ix_3) + By(ix_1,ix_2,ix_3) * Vy(ix_1,ix_2,ix_3)
+           
+           !Perp Velocity is V.DelB
+           Vperp(ix_1,ix_2,ix_3) = DelBz(ix_1,ix_2,ix_3) * Vz(ix_1,ix_2,ix_3) + DelBx(ix_1,ix_2,ix_3) * Vx(ix_1,ix_2,ix_3) + DelBy(ix_1,ix_2,ix_3) * Vy(ix_1,ix_2,ix_3)
+           
+           !Azimuthal Velocity is DelBxB.V
+           Vperp(ix_1,ix_2,ix_3) = DelBxB(ix_1,ix_2,ix_3,1) * Vz(ix_1,ix_2,ix_3) + DelBxB(ix_1,ix_2,ix_3,2) * Vx(ix_1,ix_2,ix_3) + DelBxB(ix_1,ix_2,ix_3,3) * Vy(ix_1,ix_2,ix_3)
+
+        END DO
+     END DO
+  END DO
+
+  VelOut(ixG^T,1) = Vpar
+  VelOut(ixG^T,2) = Vperp
+  VelOut(ixG^T,2) = Vaz
+  !==========================================================================
+  filenameout = filename(filelog_)
+  PRINT*, filenameout
+  WRITE (x1,'I3.3') ipe
+  filenameout = filenameout(1:INDEX(filenameout,'.')-1)//'_np020204_'//TRIM(x1)//'.log'
+  PRINT*, filenameout
+
+  INQUIRE(qunit,opened=fileopen)
+  IF(.NOT.fileopen)&
+       OPEN(qunit,file=filenameout,status='unknown',form='unformatted')
+  
+  IF(gencoord)THEN
+     ndimout= -ndim
+  ELSE
+     ndimout= ndim
+  ENDIF
+  
+  WRITE(qunit)fileheadout
+  WRITE(qunit)it,t,ndimout,neqpar+nspecialpar,nw
+  WRITE(qunit) ixmax^D-ixmin^D+1
+  WRITE(qunit)eqpar
+  WRITE(qunit) "Vpar","Vperp","Vaz"
+  WRITE(qunit)(dx(ix^S,idim),idim=1,ndim)
+  
+
+  
+
+  DO iw=1,ndim
+     WRITE(qunit)VelOut(ix^S,iw)
+  END DO
+  
+
+
+  CALL flushunit(qunit)
+
+CONTAINS
+  FUNCTION cross(a1,a2,a3,b1,b2,b3)
+    IMPLICIT NONE
+    DOUBLE PRECISION, INTENT(IN) :: a1,a2,a3,b1,b2,b3
+    DOUBLE PRECISION :: cross(3)
+
+    cross(1) = a2*b3 - a3*b2
+    cross(2) = a1*b3 - a3*b1
+    cross(3) = a1*b2 - a2*b1
+  END FUNCTION cross
+
+END SUBROUTINE savefilelog_special
+
