@@ -277,11 +277,11 @@ c_tot=maxval(cmax(ix^S))
 
 c_hyp=0.4d0 ! 1.4d0 ! 0.6
 
-if (iw.eq.b^D_|.or.) c_hyp=0.04d0 ! 2d0
+if (iw.eq.b^D_|.or.) c_hyp=0.2d0 ! 2d0
 
-if (iw .eq. rho_) c_hyp=0.04d0 !5d0
+if (iw .eq. rho_) c_hyp=0.45d0 !5d0
 
-if (iw .eq. 173) c_hyp=0.04d0 !2d0
+if (iw .eq. 173) c_hyp=0.2d0 !2d0
 
 
 
@@ -456,49 +456,49 @@ end
 
 !=============================================================================
 !=============================================================================
-SUBROUTINE setnushk(w,ix^L,nushk)
+subroutine setnushk(w,ix^L,nushk)
 
-  INCLUDE 'vacdef.f'
+include 'vacdef.f'
 
-  DOUBLE PRECISION:: w(ixG^T,nw),tmp2(ixG^T),nushk(ixG^T,ndim)
-  DOUBLE PRECISION:: c_shk
-  
-  DOUBLE PRECISION:: tmp3(ixG^T)
-  
-  INTEGER:: ix^L,idim, iw,i
-  
-  INTEGER:: ix_1,ix_2
-  
-  DO idim=1,ndim
-     nushk(ix^S,idim)=0.d0
-  END DO
-  
-  
-!!$go to 100
-!!$c_shk=0.5d0
-!!$
-!!$tmp3(ix^S)=0.d0
-!!$
-!!$!**************************BEGIN shock viscosity*******************************
-!!$      do idim=1,ndim
-!!$         tmp(ix^S)=w(ix^S,m0_+idim)/(w(ix^S,rho_)+w(ix^S,rhob_))
-!!$         call gradient1(tmp,ix^L,idim,tmp2)
-!!$         tmp3(ix^S)=tmp3(ix^S)+tmp2(ix^S)
-!!$       enddo
-!!$      do idim=1,ndim
-!!$        nushk(ix^S,idim)=tmp3(ix^S)*(dx(ix^S,idim)**2.d0)*c_shk
-!!$	WHERE (tmp3(ix^S) .ge. 0.d0)
-!!$!	  nushk(ix^S,idim)=0.d0
-!!$	END WHERE
-!!$	nushk(ix^S,idim)=abs(nushk(ix^S,idim))
-!!$      enddo
-!!$!****************************END shock viscosity*******************************
+double precision:: w(ixG^T,nw),tmp2(ixG^T),nushk(ixG^T,ndim)
+double precision:: c_shk
 
-!!$100 continue
+double precision:: tmp3(ixG^T)
+
+integer:: ix^L,idim, iw,i
+
+integer:: ix_1,ix_2
+
+do idim=1,ndim
+nushk(ix^S,idim)=0.d0
+enddo
 
 
-  RETURN
-END SUBROUTINE setnushk
+go to 100
+c_shk=0.5d0
+
+tmp3(ix^S)=0.d0
+
+!**************************BEGIN shock viscosity*******************************
+      do idim=1,ndim
+         tmp(ix^S)=w(ix^S,m0_+idim)/(w(ix^S,rho_)+w(ix^S,rhob_))
+         call gradient1(tmp,ix^L,idim,tmp2)
+         tmp3(ix^S)=tmp3(ix^S)+tmp2(ix^S)
+       enddo
+      do idim=1,ndim
+        nushk(ix^S,idim)=tmp3(ix^S)*(dx(ix^S,idim)**2.d0)*c_shk
+	WHERE (tmp3(ix^S) .ge. 0.d0)
+!	  nushk(ix^S,idim)=0.d0
+	END WHERE
+	nushk(ix^S,idim)=abs(nushk(ix^S,idim))
+      enddo
+!****************************END shock viscosity*******************************
+
+100 continue
+
+
+return
+end
 
 
 

@@ -35,17 +35,11 @@ nothing	:
 ##### Nag F95 compiler (on a Linux box) #########################
 
 #F77=f95
-#F77=/usr/local/mpich-gm2_PGI/bin/mpif77
-#F77=/usr/local/packages5/openmpi-pgi/bin/mpif77
-
-F77=/usr/local/mpi/pgi/openmpi/1.4.4/bin/mpif77
+F77=pgf77
 F77FLG=-132 -dusty -Mnobounds
 
 #F90=f95
-#F90=/usr/local/mpich-gm2_PGI/bin/mpif90
-#F90=/usr/local/packages5/openmpi-pgi/bin/mpif90
-
-F90=/usr/local/mpi/pgi/openmpi/1.4.4/bin/mpif90
+F90=pgf90
 F90FLG=-Mfreeform -Mnobounds
 
 #
@@ -519,13 +513,13 @@ VAC_OBJ = vac$O vacio$O vacgrid$O vacphys0$O vacphys$O vacusr$O
 # The VACCD, VACMC, VACFCT, VACTVDLF, VACTVD, VACIMPL, VACPOISSON, VACMPI 
 # modules are removed or added in the following two lines by "setvac". 
 # DO NOT TOUCH THESE TWO LINES:
-VACFOR = $(VAC_FOR) vaccd$F vacmpi$F
-VACOBJ = $(VAC_OBJ) vaccd$O vacmpi$O
+VACFOR = $(VAC_FOR) vaccd$F
+VACOBJ = $(VAC_OBJ) vaccd$O
 
 # The VACMPI module is removed or added the following two lines by "setvac".
 # DO NOT TOUCH THESE TWO LINES:
-VACINIFOR = vacini$F vacio$F vacphys0$F vacusr$F vacmpi$F
-VACINIOBJ = vacini$O vacio$O vacphys0$O vacusr$O vacmpi$O
+VACINIFOR = vacini$F vacio$F vacphys0$F vacusr$F
+VACINIOBJ = vacini$O vacio$O vacphys0$O vacusr$O
 
 ROEOBJ = roetest$O vacphys0$O vacphys$O
 

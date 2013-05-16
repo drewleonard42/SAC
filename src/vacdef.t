@@ -1,5 +1,6 @@
 !##############################################################################
 ! include vacdef
+
 IMPLICIT NONE
 
 !HPF$ PROCESSORS PP(NUMBER_OF_PROCESSORS())
@@ -17,7 +18,7 @@ include 'vacpar.f'
 
 INTEGER,PARAMETER:: ixGlo^D=1
 ! The next line is edited by SETVAC
-INTEGER,PARAMETER:: ixGhi1=68,ixGhi2=68,ixGhi3=40,ixGhimin=40,ixGhimax=68
+INTEGER,PARAMETER:: ixGhi1=104,ixGhi2=104,ixGhimin=104,ixGhimax=104
 INTEGER,PARAMETER:: ndim=^ND, ndir=^NC
 
 INTEGER,PARAMETER:: dixBlo=2,dixBhi=2

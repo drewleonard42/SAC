@@ -20,9 +20,9 @@ double precision:: cputime
 verbose=.true. .and.ipe==0^IFMPI
 if(verbose)then
    write(*,'(a)')'VAC 4.52 configured to'
-   write(*,'(a)')'  -d=33 -phi=0 -z=0 -g=68,68,40 -p=mhd -u=Slog'
-   write(*,'(a)')'  -on=cd,rk,mpi'
-   write(*,'(a)')'  -off=mc,fct,tvdlf,tvd,impl,poisson,ct,gencoord,resist'
+   write(*,'(a)')'  -d=22 -phi=0 -z=0 -g=104,104 -p=mhd -u=nul'
+   write(*,'(a)')'  -on=cd,rk'
+   write(*,'(a)')'  -off=mc,fct,tvdlf,tvd,impl,poisson,ct,gencoord,resist,mpi'
    {^IFMPI write(*,'(a,i3,a)')'Running on ',npe,' processors'}
 endif
 
@@ -102,7 +102,7 @@ do
 
    it=it+1
    t=t+dt
-   !print*, "****t=", t
+   print*, "****t=", t
 end do
 
 time1=cputime()-time0
