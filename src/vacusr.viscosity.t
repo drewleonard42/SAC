@@ -10,7 +10,9 @@ integer::          ixI^L,ixO^L,iws(niw_)
 double precision:: qdt,qtC,qt,w(ixG^T,nw),wnew(ixG^T,nw)
 
 integer:: ix,ix^L,idim,idir,jdir,iiw,iw
-double precision:: tmp2(ixG^T),nushk(ixG^T,ndim)
+!double precision:: tmp2(ixG^T),nushk(ixG^T,ndim)
+double precision:: nushk(ixG^T,ndim)
+
 
 
 double precision:: tmprhoL(ixG^T), tmprhoR(ixG^T), tmprhoC(ixG^T)
@@ -224,6 +226,7 @@ subroutine setnu(w,iw,idim,ix^L,nuR,nuL)
 
 include 'vacdef.f'
 
+integer:: ixi^L
 double precision:: w(ixG^T,nw)
 double precision:: d1R(^SIDEADO),d1L(^SIDEADO)
 double precision:: d3R(^SIDEADO),d3L(^SIDEADO)
@@ -275,21 +278,21 @@ c_tot=maxval(cmax(ix^S))
 
 
 
-c_hyp=0.4d0 ! 1.4d0 ! 0.6
-
-if (iw.eq.b^D_|.or.) c_hyp=0.2d0 ! 2d0
-
-if (iw .eq. rho_) c_hyp=0.45d0 !5d0
-
-if (iw .eq. 173) c_hyp=0.2d0 !2d0
-
-
+c_hyp=0.4d0 ! 0.6
 
 !if (iw.eq.b^D_|.or.) c_hyp=0.02d0
 
-!if (iw .eq. rho_) c_hyp=0.02d0
+!if (iw .eq. rho_) c_hyp=0.045d0
 
 !if (iw .eq. 173) c_hyp=0.02d0
+
+
+
+if (iw.eq.b^D_|.or.) c_hyp=0.02d0
+
+if (iw .eq. rho_) c_hyp=0.02d0
+
+if (iw .eq. 173) c_hyp=0.02d0
 
         
 if (iw .ne. 173) then     
@@ -339,18 +342,18 @@ select case(idim)
 
    call mpineighbors(^D,hpe,jpe)
 
-
+! WHERE THER ARE MISSING ARGUMENTS IN THE ARRAY RFERERENCE SUBSTITUTE A :
    if (mpiupperB(^D)) nmpirequest=nmpirequest+1
-   if (mpiupperB(^D)) call MPI_IRECV(tgtbufferR^D(1),n,MPI_DOUBLE_PRECISION, jpe,10*jpe+0,MPI_COMM_WORLD, mpirequests(nmpirequest),ierrmpi)
+   if (mpiupperB(^D)) call MPI_IRECV(tgtbufferR^D(1^D% ),n,MPI_DOUBLE_PRECISION, jpe,10*jpe+0,MPI_COMM_WORLD, mpirequests(nmpirequest),ierrmpi)
 
    if (mpilowerB(^D)) nmpirequest=nmpirequest+1
-   if (mpilowerB(^D)) call MPI_IRECV(tgtbufferL^D(1),n,MPI_DOUBLE_PRECISION, hpe,10*hpe+1,MPI_COMM_WORLD, mpirequests(nmpirequest),ierrmpi)
+   if (mpilowerB(^D)) call MPI_IRECV(tgtbufferL^D(1^D% ),n,MPI_DOUBLE_PRECISION, hpe,10*hpe+1,MPI_COMM_WORLD, mpirequests(nmpirequest),ierrmpi)
 
    call MPI_BARRIER(MPI_COMM_WORLD,ierrmpi)
 
-   if (mpiupperB(^D)) call MPI_RSEND(srcbufferR^D(1),n,MPI_DOUBLE_PRECISION, jpe,10*ipe+1,MPI_COMM_WORLD,ierrmpi)
+   if (mpiupperB(^D)) call MPI_RSEND(srcbufferR^D(1^D% ),n,MPI_DOUBLE_PRECISION, jpe,10*ipe+1,MPI_COMM_WORLD,ierrmpi)
 
-   if (mpilowerB(^D)) call MPI_RSEND(srcbufferL^D(1),n,MPI_DOUBLE_PRECISION, hpe,10*ipe+0,MPI_COMM_WORLD,ierrmpi)
+   if (mpilowerB(^D)) call MPI_RSEND(srcbufferL^D(1^D% ),n,MPI_DOUBLE_PRECISION, hpe,10*ipe+0,MPI_COMM_WORLD,ierrmpi)
 
    call MPI_WAITALL(nmpirequest,mpirequests,mpistatus,ierrmpi)
 
@@ -460,7 +463,9 @@ subroutine setnushk(w,ix^L,nushk)
 
 include 'vacdef.f'
 
-double precision:: w(ixG^T,nw),tmp2(ixG^T),nushk(ixG^T,ndim)
+!double precision:: w(ixG^T,nw),tmp2(ixG^T),nushk(ixG^T,ndim)
+double precision:: w(ixG^T,nw),nushk(ixG^T,ndim)
+
 double precision:: c_shk
 
 double precision:: tmp3(ixG^T)
@@ -557,7 +562,7 @@ gradq(ix^S)=(q(kx^S)-q(hx^S))/dx(ix^S,idim)/two
  maxx1^D=ixmax^D-kr(idim,^D);
  
  do k=0,1  !left-right bc
- 
+ if (typeB(1,2*idim-1+k) .ne. 'periodic') then
  if (typeB(1,2*idim-1+k) .ne. 'mpi') then
  if (upperB(2*idim-1+k)) then
  select case(idim)
@@ -573,6 +578,7 @@ gradq(ix^S)=(q(kx^S)-q(hx^S))/dx(ix^S,idim)/two
  gradq(minx1^D^D%ix^S)=0.d0
  }
  end select
+ endif
  endif
  endif
  enddo
@@ -601,7 +607,7 @@ gradq(ix^S)=(q(ix^S)-q(hx^S))/dx(ix^S,idim)
  maxx1^D=ixmax^D-kr(idim,^D);
  
  do k=0,1  !left-right bc
- 
+  if (typeB(1,2*idim-1+k) .ne. 'periodic') then
  if (typeB(1,2*idim-1+k) .ne. 'mpi') then
  if (upperB(2*idim-1+k)) then
  select case(idim)
@@ -617,6 +623,7 @@ gradq(ix^S)=(q(ix^S)-q(hx^S))/dx(ix^S,idim)
  gradq(minx1^D^D%ix^S)=0.d0
  }
  end select
+ endif
  endif
  endif
  enddo
@@ -644,7 +651,7 @@ gradq(ix^S)=(q(hx^S)-q(ix^S))/dx(ix^S,idim)
  maxx1^D=ixmax^D-kr(idim,^D);
  
  do k=0,1  !left-right bc
- 
+ if (typeB(1,2*idim-1+k) .ne. 'periodic') then
  if (typeB(1,2*idim-1+k) .ne. 'mpi') then
  if (upperB(2*idim-1+k)) then
  select case(idim)
@@ -660,6 +667,7 @@ gradq(ix^S)=(q(hx^S)-q(ix^S))/dx(ix^S,idim)
  gradq(minx1^D^D%ix^S)=0.d0
  }
  end select
+ endif
  endif
  endif
  enddo
