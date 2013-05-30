@@ -344,16 +344,16 @@ select case(idim)
 
 ! WHERE THER ARE MISSING ARGUMENTS IN THE ARRAY RFERERENCE SUBSTITUTE A :
    if (mpiupperB(^D)) nmpirequest=nmpirequest+1
-   if (mpiupperB(^D)) call MPI_IRECV(tgtbufferR^D(1^D% ),n,MPI_DOUBLE_PRECISION, jpe,10*jpe+0,MPI_COMM_WORLD, mpirequests(nmpirequest),ierrmpi)
+   if (mpiupperB(^D)) call MPI_IRECV({tgtbufferR^D({1^D%:|,})|,},n,MPI_DOUBLE_PRECISION, jpe,10*jpe+0,MPI_COMM_WORLD, mpirequests(nmpirequest),ierrmpi)
 
    if (mpilowerB(^D)) nmpirequest=nmpirequest+1
-   if (mpilowerB(^D)) call MPI_IRECV(tgtbufferL^D(1^D% ),n,MPI_DOUBLE_PRECISION, hpe,10*hpe+1,MPI_COMM_WORLD, mpirequests(nmpirequest),ierrmpi)
+   if (mpilowerB(^D)) call MPI_IRECV({tgtbufferL^D({1^D%:|,})|,},n,MPI_DOUBLE_PRECISION, hpe,10*hpe+1,MPI_COMM_WORLD, mpirequests(nmpirequest),ierrmpi)
 
    call MPI_BARRIER(MPI_COMM_WORLD,ierrmpi)
 
-   if (mpiupperB(^D)) call MPI_RSEND(srcbufferR^D(1^D% ),n,MPI_DOUBLE_PRECISION, jpe,10*ipe+1,MPI_COMM_WORLD,ierrmpi)
+   if (mpiupperB(^D)) call MPI_RSEND({srcbufferR^D({1^D%:|,})|,},n,MPI_DOUBLE_PRECISION, jpe,10*ipe+1,MPI_COMM_WORLD,ierrmpi)
 
-   if (mpilowerB(^D)) call MPI_RSEND(srcbufferL^D(1^D% ),n,MPI_DOUBLE_PRECISION, hpe,10*ipe+0,MPI_COMM_WORLD,ierrmpi)
+   if (mpilowerB(^D)) call MPI_RSEND({srcbufferL^D({1^D%:|,})|,},n,MPI_DOUBLE_PRECISION, hpe,10*ipe+0,MPI_COMM_WORLD,ierrmpi)
 
    call MPI_WAITALL(nmpirequest,mpirequests,mpistatus,ierrmpi)
 
