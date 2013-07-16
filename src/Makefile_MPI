@@ -36,12 +36,12 @@ nothing	:
 
 #F77=f95
 #F77=/usr/local/mpich-gm2_PGI/bin/mpif77
-F77=/usr/local/packages5/openmpi-pgi/bin/mpif77
+F77=mpif77
 F77FLG=-132 -dusty -Mnobounds
 
 #F90=f95
 #F90=/usr/local/mpich-gm2_PGI/bin/mpif90
-F90=/usr/local/packages5/openmpi-pgi/bin/mpif90
+F90=mpif90
 F90FLG=-Mfreeform -Mnobounds
 
 #
