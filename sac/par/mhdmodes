@@ -1,0 +1,49 @@
+&testlist /
+
+&filelist
+	filenameini='/data/smq11sjm/VAC/data/mhdmodes.ini'
+
+	typefileini='binary'
+	filename=   '/data/smq11sjm/VAC/data/mhdmodes_b3.log',
+		    '/data/smq11sjm/VAC/data/mhdmodes_b3.out'
+	typefileout='binary'
+        fullgridout= T
+        fullgridini= T
+ /
+
+&savelist
+	dtsave=0.1,0.0001
+
+ /
+
+ &stoplist
+	tmax=0.2d0
+	itmax = 10000
+ /
+
+ &methodlist
+
+	wnames=		'h 	m1  	 m2	e	b1	b2	eb	rhob	bg1	bg2'
+	typefull=	6*'cd4',4*'nul'
+        typeadvance=    'onestep'
+	typefilter=	10*'nul'
+	dimsplit=	F
+	sourcesplit=	F
+	divBfix=	F
+	smallp= 	10.d0
+ /
+
+ &boundlist
+	typeB=	10*'fixed'
+		10*'fixed'
+		10*'fixed'
+		10*'fixed'
+		10*'fixed'
+		10*'fixed'
+				
+ /
+
+ &paramlist
+	courantpar=0.2
+
+ /
