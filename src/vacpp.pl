@@ -154,7 +154,7 @@ sub definepatterns{
    &patdef('LT'		,2	,'>'	,'<'	);
 
    &patdef('LENTYPE'	,1	,10		);
-   &patdef('LENNAME'	,1	,79		);
+   &patdef('LENNAME'	,1	,400	);
 
    &patdef('IFONED'	,$ndim==1		);
    &patdef('IFTWOD'	,$ndim==2		);
