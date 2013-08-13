@@ -7,20 +7,20 @@
 #$ -N S3D_Slog
 #$ -P mhd
 #$ -q mhd.q
-
-
-#source /etc/profile.d/modules.sh add mpi/pgi/openmpi/1.4.3
-module add mpi/pgi/openmpi/1.6.4
-
-
+#$ -j y
 
 echo "SAC will run on the following nodes"
 cat $PE_HOSTFILE
+
+git checkout master
+
+module add mpi/pgi/openmpi/1.6.4
+
 echo Starting vac now.
 /usr/local/mpi/pgi/openmpi/1.6.4/bin/mpirun vac
 
-#echo "Starting conversion to h5"
+echo "Starting conversion to h5"
 /usr/local/mpi/pgi/openmpi/1.6.4/bin/mpirun convh5
 
-#echo "Job Complete"
+echo "Job Complete"
 /home/smq11sjm/.local/bin/pushover "Job Complete S3D_Slog"
