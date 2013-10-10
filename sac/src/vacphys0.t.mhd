@@ -2,224 +2,232 @@
 ! module vacphys0 - mhd
 
 !=============================================================================
-subroutine conserve(ix^L,w)
+SUBROUTINE conserve(ix^L,w)
 
-! Transform primitive variables into conservative ones
+  ! Transform primitive variables into conservative ones
 
-include 'vacdef.f'
+  USE constants
+  USE common_varibles
 
-integer:: ix^L
-double precision:: w(ixG^T,nw)
-!-----------------------------------------------------------------------------
-
-
-! Calculate total energy from pressure, kinetic and magnetic energy
-
-w(ix^S,e_)=w(ix^S,p_)/(eqpar(gamma_)-1)+&
-   half*((w(ix^S,rho_)+w(ix^S,rhob_))*(^C&w(ix^S,v^C_)**2+)+(^C&(w(ix^S,b^C_))**2+))+&
-   (^C&(w(ix^S,b^C_)*w(ix^S,bg^C_))+)
+  INTEGER:: ix^L
+  DOUBLE PRECISION:: w(ixG^T,nw)
+  !-----------------------------------------------------------------------------
 
 
-! Convert velocity to momentum
-^C&w(ix^S,m^C_)=(w(ix^S,rho_)+w(ix^S,rhob_))*w(ix^S,v^C_);
+  ! Calculate total energy from pressure, kinetic and magnetic energy
+
+  w(ix^S,e_)=w(ix^S,p_)/(eqpar(gamma_)-1)+&
+       half*((w(ix^S,rho_)+w(ix^S,rhob_))*(^C&w(ix^S,v^C_)**2+)+(^C&(w(ix^S,b^C_))**2+))+&
+       (^C&(w(ix^S,b^C_)*w(ix^S,bg^C_))+)
 
 
-return
-end
-
-!=============================================================================
-subroutine primitive(ix^L,w)
-
-! Transform conservative variables into primitive ones
-
-include 'vacdef.f'
-
-integer:: ix^L
-double precision:: w(ixG^T,nw)
-!-----------------------------------------------------------------------------
+  ! Convert velocity to momentum
+  ^C&w(ix^S,m^C_)=(w(ix^S,rho_)+w(ix^S,rhob_))*w(ix^S,v^C_);
 
 
-! Calculate pressure
-
-call getpthermal(w,ix^L,tmp)
-
-w(ix^S,p_)=tmp(ix^S)
-
-! Convert momentum to velocity
-^C&w(ix^S,v^C_)=w(ix^S,m^C_)/(w(ix^S,rho_)+w(ix^S,rhob_));
-
-return
-end
+  RETURN
+END SUBROUTINE conserve
 
 !=============================================================================
-subroutine getv(w,ix^L,idim,v)
+SUBROUTINE primitive(ix^L,w)
 
-! Calculate v_idim=m_idim/rho within ix
+  ! Transform conservative variables into primitive ones
 
-include 'vacdef.f'
+  USE constants
+  USE common_varibles
 
-integer:: ix^L,idim
-double precision:: w(ixG^T,nw),v(ixG^T)
-!-----------------------------------------------------------------------------
+  INTEGER:: ix^L
+  DOUBLE PRECISION:: w(ixG^T,nw)
+  !-----------------------------------------------------------------------------
 
-oktest=index(teststr,'getv')>=1
-if(oktest)write(*,*)'GetV w:',w(ixtest^D,iwtest)
 
-v(ix^S)=w(ix^S,m0_+idim)/(w(ix^S,rho_)+w(ix^S,rhob_))
+  ! Calculate pressure
 
-if(oktest)write(*,*)'GetV v:',v(ixtest^D)
+  CALL getpthermal(w,ix^L,tmp)
 
-return 
-end
+  w(ix^S,p_)=tmp(ix^S)
+
+  ! Convert momentum to velocity
+  ^C&w(ix^S,v^C_)=w(ix^S,m^C_)/(w(ix^S,rho_)+w(ix^S,rhob_));
+
+  RETURN
+END SUBROUTINE primitive
+
+!=============================================================================
+SUBROUTINE getv(w,ix^L,idim,v)
+
+  ! Calculate v_idim=m_idim/rho within ix
+
+  USE constants
+  USE common_varibles
+
+  INTEGER:: ix^L,idim
+  DOUBLE PRECISION:: w(ixG^T,nw),v(ixG^T)
+  !-----------------------------------------------------------------------------
+
+  oktest=INDEX(teststr,'getv')>=1
+  IF(oktest)WRITE(*,*)'GetV w:',w(ixtest^D,iwtest)
+
+  v(ix^S)=w(ix^S,m0_+idim)/(w(ix^S,rho_)+w(ix^S,rhob_))
+
+  IF(oktest)WRITE(*,*)'GetV v:',v(ixtest^D)
+
+  RETURN 
+END SUBROUTINE getv
 
 
 !=============================================================================
-subroutine getcmax(new_cmax,w,ix^L,idim,cmax)
+SUBROUTINE getcmax(new_cmax,w,ix^L,idim,cmax)
 
-! Calculate cmax_idim=cfast_i+abs(v_idim) within ix^L
-! where cfast_i=sqrt(0.5*(cf**2+sqrt(cf**4-4*cs**2*b_i**2/rho)))
-! and cf**2=b**2/rho+cs**2/rho is the square of the speed of the fast wave 
-! perpendicular to the magnetic field, and cs is the sound speed.
+  ! Calculate cmax_idim=cfast_i+abs(v_idim) within ix^L
+  ! where cfast_i=sqrt(0.5*(cf**2+sqrt(cf**4-4*cs**2*b_i**2/rho)))
+  ! and cf**2=b**2/rho+cs**2/rho is the square of the speed of the fast wave 
+  ! perpendicular to the magnetic field, and cs is the sound speed.
 
-include 'vacdef.f'
+  USE constants
+  USE common_varibles
 
-logical:: new_cmax
-integer:: ix^L,idim
-double precision:: w(ixG^T,nw),cmax(ixG^T)
-double precision:: csound2(ixG^T),cfast2(ixG^T)
-save csound2,cfast2
-!-----------------------------------------------------------------------------
-oktest=index(teststr,'getcmax')>=1
+  LOGICAL:: new_cmax
+  INTEGER:: ix^L,idim
+  DOUBLE PRECISION:: w(ixG^T,nw),cmax(ixG^T)
+  DOUBLE PRECISION:: csound2(ixG^T),cfast2(ixG^T)
+  SAVE csound2,cfast2
+  !-----------------------------------------------------------------------------
+  oktest=INDEX(teststr,'getcmax')>=1
 
-!Direction independent part of getcmax:
-if(new_cmax)then
-   new_cmax=.false.
-   call getcsound2(w,ix^L,csound2)
-   if(oktest)write(*,*)'csound2:',csound2(ixtest^D)
-   cfast2(ix^S)=(^C&(w(ix^S,b^C_)+w(ix^S,bg^C_))**2+ )/(w(ix^S,rho_)+w(ix^S,rhob_))+csound2(ix^S)
-end if
-if(oktest)write(*,*)'cfast2:',cfast2(ixtest^D)
+  !Direction independent part of getcmax:
+  IF(new_cmax)THEN
+     new_cmax=.FALSE.
+     CALL getcsound2(w,ix^L,csound2)
+     IF(oktest)WRITE(*,*)'csound2:',csound2(ixtest^D)
+     cfast2(ix^S)=(^C&(w(ix^S,b^C_)+w(ix^S,bg^C_))**2+ )/(w(ix^S,rho_)+w(ix^S,rhob_))+csound2(ix^S)
+  END IF
+  IF(oktest)WRITE(*,*)'cfast2:',cfast2(ixtest^D)
 
-cmax(ix^S)=sqrt(half*(cfast2(ix^S)+ &
-   sqrt(cfast2(ix^S)**2-4*csound2(ix^S)* &
-   ((w(ix^S,b0_+idim)+w(ix^S,bg0_+idim))**2)/(w(ix^S,rho_)+w(ix^S,rhob_))))) &
-   +abs(w(ix^S,m0_+idim)/(w(ix^S,rho_)+w(ix^S,rhob_)))
+  cmax(ix^S)=SQRT(half*(cfast2(ix^S)+ &
+       SQRT(cfast2(ix^S)**2-4*csound2(ix^S)* &
+       ((w(ix^S,b0_+idim)+w(ix^S,bg0_+idim))**2)/(w(ix^S,rho_)+w(ix^S,rhob_))))) &
+       +ABS(w(ix^S,m0_+idim)/(w(ix^S,rho_)+w(ix^S,rhob_)))
 
-if(oktest) write(*,*)'cmax:',cmax(ixtest^D)
+  IF(oktest) WRITE(*,*)'cmax:',cmax(ixtest^D)
 
 
-return 
-end
-
-!=============================================================================
-subroutine getcsound2prim(w,ix^L,csound2)
-
-! Calculate the square of the thermal sound speed csound2 within ix^L
-! from the primitive variables in w.
-! csound2=gamma*p/rho
-
-include 'vacdef.f'
-
-double precision:: w(ixG^T,nw),csound2(ixG^T)
-integer:: ix^L
-!-----------------------------------------------------------------------------
-
-if(eqpar(gamma_)<=zero)&
-   call die('Correct Getcsound2prim for NONIDEAL gas in vacphys.t.mhd')
-
-csound2(ix^S)=eqpar(gamma_)*(w(ix^S,p_)+(eqpar(gamma_)-one)*(w(ix^S,eb_)-&
-                 half*( ^C&(w(ix^S,bg^C_))**2+ )))/(w(ix^S,rho_)+w(ix^S,rhob_))
-
-return 
-end
+  RETURN 
+END SUBROUTINE getcmax
 
 !=============================================================================
-subroutine getcsound2(w,ix^L,csound2)
+SUBROUTINE getcsound2prim(w,ix^L,csound2)
 
-! Calculate the square of the thermal sound speed csound2 within ix^L.
-! csound2=gamma*p/rho
+  ! Calculate the square of the thermal sound speed csound2 within ix^L
+  ! from the primitive variables in w.
+  ! csound2=gamma*p/rho
 
-include 'vacdef.f'
+  USE constants
+  USE common_varibles
 
-double precision:: w(ixG^T,nw),csound2(ixG^T)
-integer:: ix^L
-!-----------------------------------------------------------------------------
+  DOUBLE PRECISION:: w(ixG^T,nw),csound2(ixG^T)
+  INTEGER:: ix^L
+  !-----------------------------------------------------------------------------
 
-if(eqpar(gamma_)<=zero)&
-   call die('Correct Getcsound2 for NONIDEAL gas in vacphys.t.mhd')
+  IF(eqpar(gamma_)<=zero)&
+       CALL die('Correct Getcsound2prim for NONIDEAL gas in vacphys.t.mhd')
 
-oktest=index(teststr,'getcsound2')>=1
-if(oktest) write(*,*)'Getcsound2'
+  csound2(ix^S)=eqpar(gamma_)*(w(ix^S,p_)+(eqpar(gamma_)-one)*(w(ix^S,eb_)-&
+       half*( ^C&(w(ix^S,bg^C_))**2+ )))/(w(ix^S,rho_)+w(ix^S,rhob_))
 
-call getpthermal(w,ix^L,csound2)
-if(oktest) write(*,*)'p(ixtest)=',csound2(ixtest^D)
-csound2(ix^S)=eqpar(gamma_)*(csound2(ix^S)+(eqpar(gamma_)-one)*(w(ix^S,eb_)-&
-                 half*( ^C&(w(ix^S,bg^C_))**2+ )))/(w(ix^S,rho_)+w(ix^S,rhob_))
-
-return 
-end
+  RETURN 
+END SUBROUTINE getcsound2prim
 
 !=============================================================================
-subroutine getpthermal(w,ix^L,p)
+SUBROUTINE getcsound2(w,ix^L,csound2)
+
+  ! Calculate the square of the thermal sound speed csound2 within ix^L.
+  ! csound2=gamma*p/rho
+
+  USE constants
+  USE common_varibles
+
+  DOUBLE PRECISION:: w(ixG^T,nw),csound2(ixG^T)
+  INTEGER:: ix^L
+  !-----------------------------------------------------------------------------
+
+  IF(eqpar(gamma_)<=zero)&
+       CALL die('Correct Getcsound2 for NONIDEAL gas in vacphys.t.mhd')
+
+  oktest=INDEX(teststr,'getcsound2')>=1
+  IF(oktest) WRITE(*,*)'Getcsound2'
+
+  CALL getpthermal(w,ix^L,csound2)
+  IF(oktest) WRITE(*,*)'p(ixtest)=',csound2(ixtest^D)
+  csound2(ix^S)=eqpar(gamma_)*(csound2(ix^S)+(eqpar(gamma_)-one)*(w(ix^S,eb_)-&
+       half*( ^C&(w(ix^S,bg^C_))**2+ )))/(w(ix^S,rho_)+w(ix^S,rhob_))
+
+  RETURN 
+END SUBROUTINE getcsound2
+
+!=============================================================================
+SUBROUTINE getpthermal(w,ix^L,p)
 
 !!! This subroutine should not use tmp,tmp2
 
 
-include 'vacdef.f'
+  USE constants
+  USE common_varibles
 
-double precision:: w(ixG^T,nw),p(ixG^T)
-integer:: ix^L
-!-----------------------------------------------------------------------------
-
-
-p(ix^S)=half*( ^C&w(ix^S,m^C_)**2+ )/(w(ix^S,rho_)+w(ix^S,rhob_))
-
-p(ix^S)=p(ix^S)+ half*( ^C&(w(ix^S,b^C_)**2)+ )+( ^C&(w(ix^S,b^C_)*w(ix^S,bg^C_))+ )
-
-p(ix^S)=(eqpar(gamma_)-one)*(w(ix^S,e_)-p(ix^S))
+  DOUBLE PRECISION:: w(ixG^T,nw),p(ixG^T)
+  INTEGER:: ix^L
+  !-----------------------------------------------------------------------------
 
 
-return 
-end
+  p(ix^S)=half*( ^C&w(ix^S,m^C_)**2+ )/(w(ix^S,rho_)+w(ix^S,rhob_))
 
-!=============================================================================
-subroutine getptotal(w,ix^L,p)
+  p(ix^S)=p(ix^S)+ half*( ^C&(w(ix^S,b^C_)**2)+ )+( ^C&(w(ix^S,b^C_)*w(ix^S,bg^C_))+ )
 
-include 'vacdef.f'
-
-double precision::  w(ixG^T,nw),p(ixG^T),gamma
-integer:: ix^L
-!-----------------------------------------------------------------------------
-
-if(eqpar(gamma_)<=zero)&
-   call die('Correct GetPtotal for NONIDEAL gas in vacphys.t.mhd')
-
-gamma=eqpar(gamma_)
-
-p(ix^S)=(gamma-two)*(( ^C&(w(ix^S,b^C_)*w(ix^S,bg^C_))+ )+ half*( ^C&(w(ix^S,b^C_))**2.d0+ ))
-
-p(ix^S)=(gamma-one)*(w(ix^S,e_)-half*( ^C&w(ix^S,m^C_)**2.d0+ )/(w(ix^S,rho_)+w(ix^S,rhob_)))-p(ix^S)
+  p(ix^S)=(eqpar(gamma_)-one)*(w(ix^S,e_)-p(ix^S))
 
 
-return 
-end
+  RETURN 
+END SUBROUTINE getpthermal
 
 !=============================================================================
-subroutine getptotal_bg(w,ix^L,p)
+SUBROUTINE getptotal(w,ix^L,p)
 
-include 'vacdef.f'
+  USE constants
+  USE common_varibles
 
-double precision::  w(ixG^T,nw),p(ixG^T),gamma
-integer:: ix^L
-!-----------------------------------------------------------------------------
+  DOUBLE PRECISION::  w(ixG^T,nw),p(ixG^T),gamma
+  INTEGER:: ix^L
+  !-----------------------------------------------------------------------------
 
-if(eqpar(gamma_)<=zero)&
-   call die('Correct GetPtotal for NONIDEAL gas in vacphys.t.mhd')
+  IF(eqpar(gamma_)<=zero)&
+       CALL die('Correct GetPtotal for NONIDEAL gas in vacphys.t.mhd')
 
-gamma=eqpar(gamma_)
+  gamma=eqpar(gamma_)
 
-p(ix^S)=(eqpar(gamma_)-one)*w(ix^S,eb_)-half*(eqpar(gamma_)-two)*( ^C&(w(ix^S,bg^C_)**2.d0)+ )    
+  p(ix^S)=(gamma-two)*(( ^C&(w(ix^S,b^C_)*w(ix^S,bg^C_))+ )+ half*( ^C&(w(ix^S,b^C_))**2.d0+ ))
 
-return 
-end
+  p(ix^S)=(gamma-one)*(w(ix^S,e_)-half*( ^C&w(ix^S,m^C_)**2.d0+ )/(w(ix^S,rho_)+w(ix^S,rhob_)))-p(ix^S)
 
+
+  RETURN 
+END SUBROUTINE getptotal
+
+!=============================================================================
+SUBROUTINE getptotal_bg(w,ix^L,p)
+
+  USE constants
+  USE common_varibles
+
+  DOUBLE PRECISION::  w(ixG^T,nw),p(ixG^T),gamma
+  INTEGER:: ix^L
+  !-----------------------------------------------------------------------------
+
+  IF(eqpar(gamma_)<=zero)&
+       CALL die('Correct GetPtotal for NONIDEAL gas in vacphys.t.mhd')
+
+  gamma=eqpar(gamma_)
+
+  p(ix^S)=(eqpar(gamma_)-one)*w(ix^S,eb_)-half*(eqpar(gamma_)-two)*( ^C&(w(ix^S,bg^C_)**2.d0)+ )    
+
+  RETURN 
+END SUBROUTINE getptotal_bg

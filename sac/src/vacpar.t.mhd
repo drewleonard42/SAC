@@ -3,8 +3,8 @@
 
 ! For MHD: density,momentum,energy,magnetic_field + adiabatic_index,resistivity
 
-CHARACTER*3,PARAMETER:: typephys='mhd'           ! VACPHYS module name
-CHARACTER*9,PARAMETER:: eqparname='gamma eta'    ! Equation parameter names
+CHARACTER(3),PARAMETER:: typephys='mhd'           ! VACPHYS module name
+CHARACTER(9),PARAMETER:: eqparname='gamma eta'    ! Equation parameter names
 
 INTEGER,PARAMETER:: rho_=1,m0_=rho_,m^C_=m0_+^C,e_=m^NC_+1! flow variables
 INTEGER,PARAMETER:: ee_=e_, b0_=e_,b^C_=b0_+^C            ! flow variables
