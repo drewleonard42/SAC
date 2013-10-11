@@ -1,11 +1,18 @@
-MODULE constants
-  
-  {^IFMPI
-  ! MPI header file
-  USE mpi !include 'mpif.h'
-  }
+MODULE phys_constants
   IMPLICIT NONE
   SAVE
+  
+  INTEGER, PARAMETER :: biginteger=10000000
+  DOUBLE PRECISION, PARAMETER :: pi= 3.1415926535897932384626433832795
+  DOUBLE PRECISION, PARAMETER :: smalldouble=1.d-99, bigdouble=1.d+99
+  DOUBLE PRECISION, PARAMETER :: zero=0d0, one=1d0, two=2d0, half=0.5d0, quarter=0.25d0
+  
+END MODULE phys_constants
+
+MODULE code_constants
+  IMPLICIT NONE
+  SAVE
+
   ! DEFINITIONS OF GLOBAL PARAMETERS
   ! Indices for cylindrical coordinates FOR TESTS, negative value when not used:
   INTEGER, PARAMETER :: r_=1, phi_=^PHI, z_=^Z
@@ -14,21 +21,14 @@ MODULE constants
   INTEGER, PARAMETER :: pphi_=^PPHI, zz_=^ZZ
 
   INTEGER, PARAMETER :: ixGlo^D=1
+
   ! The next line is edited by SETVAC
   INTEGER, PARAMETER :: ixGhi1=104,ixGhi2=104,ixGhimin=104,ixGhimax=104
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
   INTEGER, PARAMETER :: ndim=^ND, ndir=^NC
 
   INTEGER, PARAMETER :: dixBlo=2,dixBhi=2
-
-  !Old imports really could do with making into modules
-  include 'vacpar.f90'
-  include 'vacusrpar.f90'
-
-  {^IFPOISSON
-  INTEGER, PARAMETER :: nwrk=7 !Size of work array for VACPOISSON
-  } 
-
-  INTEGER, PARAMETER:: nhi=nw*{ixGhi^D*} ! Maximum number of unknowns for VACIMPL
 
   INTEGER, PARAMETER :: nhiB=10           ! maximum No. boundary sections
 
@@ -43,13 +43,29 @@ MODULE constants
   ! Outputfiles use unitini+1..initini+nfile
   ! Default parfiles uses unitini-1
 
-  INTEGER, PARAMETER :: biginteger=10000000
-  DOUBLE PRECISION, PARAMETER :: pi= 3.1415926535897932384626433832795
-  DOUBLE PRECISION, PARAMETER :: smalldouble=1.D-99, bigdouble=1.D+99
-  DOUBLE PRECISION, PARAMETER :: zero=0D0, one=1D0, two=2D0, half=0.5D0, quarter=0.25D0
-
   INTEGER, PARAMETER :: toosmallp_=1, toosmallr_=2, couranterr_=3, poissonerr_=4
   INTEGER, PARAMETER :: nerrcode=4
+
+  {^IFPOISSON
+  INTEGER, PARAMETER :: nwrk=7 !Size of work array for VACPOISSON
+  } 
+
+END MODULE code_constants
+
+MODULE constants
+  USE code_constants
+  {^IFMPI
+  ! MPI header file
+  USE mpi !include 'mpif.h'
+  }
+  IMPLICIT NONE
+  SAVE
+
+  !Old imports really could do with making into modules
+  include 'vacpar.f90'
+  include 'vacusrpar.f90'
+
+  INTEGER, PARAMETER:: nhi=nw*{ixGhi^D*} ! Maximum number of unknowns for VACIMPL
 
   !##############################################################################
   ! Define MPI only things 
@@ -69,6 +85,7 @@ MODULE constants
   }
 
 END MODULE constants
+
 
 MODULE common_varibles
   USE constants

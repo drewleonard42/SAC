@@ -8,7 +8,7 @@ PROGRAM vac
   ! Based on the
   ! Versatile Advection Code, (c) Gabor Toth. Started on Nov 8, 1994.
 
-  ! Pulled upto FORTRAN 2003 by Stuart Mumford 2013
+  ! Pulled upto FORTRAN 2008 by Stuart Mumford 2013
 
   USE constants
   USE common_varibles
