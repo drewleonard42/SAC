@@ -714,26 +714,42 @@ SUBROUTINE readfileini_bin(w)
 
   snapshot=0
   DO
+     ! Read filehead
      READ(unitini,iostat=ios) fileheadini !END=100
+
      IF(ios<0)EXIT                ! Cycle until the last recorded state
      IF(oktest) WRITE(unitterm,*)'fileheadini=',fileheadini(1:30)
+
+     ! Read params
      READ(unitini,iostat=ios)it,t,ndimini,neqparini,nwini
      IF(oktest) WRITE(unitterm, &
           "('it=',i7,' t=',g10.3,' ndim=',i3,' neqpar=',i3,' nw=',i3)")&
           it,t,ndimini,neqparini,nwini
      gencoord= ndimini<0
+     ! Validate parameters?
      CALL checkNdimNeqparNw(ndimini,neqparini,nwini,neqparin,nwin)
+
+     ! Read nx
      READ(unitini,iostat=ios)nx
      IF(oktest) WRITE(unitterm,"('nx =',3i4)")nx
-     CALL setixGixMix(ix^L)
+     ! This set's up the global indicies based on nx and also
+     ! deals with the MPI indicies etc.
+     CALL setixGixMix(ix^L) 
+
+     ! Read eqpar
      READ(unitini,iostat=ios)(eqpar(ieqpar),ieqpar=1,neqparin),&
           (eqparextra,ieqpar=neqparin+1,neqparini)
      IF(oktest) WRITE(unitterm,*)eqpar
+
+     ! Read varnamesini
      READ(unitini,iostat=ios)varnamesini
      IF(varnames=='default')varnames=varnamesini
      IF(oktest) WRITE(unitterm,*)varnames
 
+     ! Read x array
      READ(unitini,iostat=ios)(x(ix^S,idim),idim=1,ndim)
+
+     ! Read w array
      ! To conform savefileout_bin we use loop for iw
      DO iw=1,nwin
         READ(unitini,iostat=ios)w(ix^S,iw)
