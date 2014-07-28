@@ -1,11 +1,13 @@
-&testlist /
+&testlist 
+    teststr='readfileini'
+/
 
 &filelist
-	filenameini='/archive/mhdmodes_2D.ini'
+	filenameini='/data/smq11sjm/VAC/data/mhdmodes_2D.ini'
 
 	typefileini='binary'
-	filename=   '/archive/mhdmodes_2D.log',
-     		    '/archive/mhdmodes_2D.out'
+	filename=   '/data/smq11sjm/VAC/data/mhdmodes_2D.log',
+     		    '/data/smq11sjm/VAC/data/mhdmodes_2D.out'
 	typefileout='binary'
         fullgridout= T
         fullgridini= T
