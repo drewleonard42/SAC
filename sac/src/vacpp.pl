@@ -17,7 +17,7 @@ $ndim=2; $ndir=2;
 $phi=-9; $z=-8;
 $if_cd=1; $if_mc=0; $if_fct=0; $if_tvdlf=0; $if_tvd=0; 
 $if_impl=0; $if_poisson=0; $if_ct=0; $if_gencoord=0; $if_resist=0; $if_rk=1;
-$if_mpi=1;
+$if_mpi=0;
 
 # SETVAC READS UP TO THIS POINT
 
