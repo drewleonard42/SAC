@@ -35,7 +35,6 @@ MODULE code_constants
   INTEGER, PARAMETER :: nsavehi=100       ! maximum No. saves into outputfiles
   ! defined by arrays of tsave or itsave
 
-  INTEGER, PARAMETER :: niw_=nw+1         !Indexname for size of iw index array
 
   INTEGER, PARAMETER :: filelog_=1,fileout_=2,nfile=2 ! outputfiles
 
@@ -53,6 +52,7 @@ MODULE code_constants
 END MODULE code_constants
 
 MODULE constants
+  USE phys_constants
   USE code_constants
   {^IFMPI
   ! MPI header file
@@ -66,6 +66,8 @@ MODULE constants
   include 'vacusrpar.f90'
 
   INTEGER, PARAMETER:: nhi=nw*{ixGhi^D*} ! Maximum number of unknowns for VACIMPL
+
+  INTEGER, PARAMETER :: niw_=nw+1         !Indexname for size of iw index array
 
   !##############################################################################
   ! Define MPI only things 
