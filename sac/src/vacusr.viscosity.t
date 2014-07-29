@@ -4,7 +4,7 @@ SUBROUTINE addsource_visc(qdt,ixI^L,ixO^L,iws,qtC,w,qt,wnew)
   ! Add viscosity source to wnew within ixO 
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER::          ixI^L,ixO^L,iws(niw_)
   DOUBLE PRECISION:: qdt,qtC,qt,w(ixG^T,nw),wnew(ixG^T,nw)
@@ -227,7 +227,7 @@ SUBROUTINE setnu(w,iw,idim,ix^L,nuR,nuL)
   ! Set the viscosity coefficient nu within ixO based on w(ixI). 
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: ixi^L
   DOUBLE PRECISION:: w(ixG^T,nw)
@@ -462,7 +462,7 @@ END SUBROUTINE setnu
 SUBROUTINE setnushk(w,ix^L,nushk)
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   !double precision:: w(ixG^T,nw),tmp2(ixG^T),nushk(ixG^T,ndim)
   DOUBLE PRECISION:: w(ixG^T,nw),nushk(ixG^T,ndim)
@@ -516,7 +516,7 @@ SUBROUTINE getdt_visc(w,ix^L)
   ! Based on Hirsch volume 2, p.631, eq.23.2.17
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   DOUBLE PRECISION:: w(ixG^T,nw),dtdiff_visc
   INTEGER:: ix^L,idim, ix_1,ix_2
@@ -550,7 +550,7 @@ END SUBROUTINE getdt_visc
 
 SUBROUTINE gradient1(q,ix^L,idim,gradq)
   USE constants
-  USE common_varibles
+  USE common_variables
   INTEGER:: ix^L,idim
   DOUBLE PRECISION:: q(ixG^T),gradq(ixG^T)
   INTEGER:: hx^L,kx^L
@@ -597,7 +597,7 @@ END SUBROUTINE gradient1
 
 SUBROUTINE gradient1L(q,ix^L,idim,gradq)
   USE constants
-  USE common_varibles
+  USE common_variables
   INTEGER:: ix^L,idim
   DOUBLE PRECISION:: q(ixG^T),gradq(ixG^T)
   INTEGER:: hx^L
@@ -642,7 +642,7 @@ END SUBROUTINE gradient1L
 
 SUBROUTINE gradient1R(q,ix^L,idim,gradq)
   USE constants
-  USE common_varibles
+  USE common_variables
   INTEGER:: ix^L,idim
   DOUBLE PRECISION:: q(ixG^T),gradq(ixG^T)
   INTEGER:: hx^L

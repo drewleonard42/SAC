@@ -12,7 +12,7 @@ SUBROUTINE specialini(ix^L,w)
   ! Initialize w for VACINI, user-defined
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: ix^L
   DOUBLE PRECISION:: w(ixG^T,nw)
@@ -28,7 +28,7 @@ SUBROUTINE specialbound(qt,ix^L,iw,iB,w)
   ! Calculates the boundary values in the iB-th boundary segment, user-defined
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: ix^L,iw,iB
   DOUBLE PRECISION:: qt,w(ixG^T,nw)
@@ -59,7 +59,7 @@ SUBROUTINE specialsource(qdt,ixI^L,ixO^L,iws,qtC,wCT,qt,w)
   ! where "dix" is the number of extra layers needed, typically 1 or 2.
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: ixI^L,ixO^L,iws(niw_)
   DOUBLE PRECISION:: qdt,qtC,qt,wCT(ixG^T,nw),w(ixG^T,nw)
@@ -79,7 +79,7 @@ SUBROUTINE getdt_special(w,ix^L)
   ! module have already been called. 
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   DOUBLE PRECISION:: w(ixG^T,nw)
   INTEGER:: ix^L
@@ -103,7 +103,7 @@ SUBROUTINE specialeta(w,ix^L,idirmin)
   ! and/or local values (ix) of "current" only, i.e. it has to be compact.
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   DOUBLE PRECISION:: w(ixG^T,nw)
   INTEGER:: ix^L,idirmin
@@ -119,7 +119,7 @@ SUBROUTINE readfileini_special(w)
   ! Check readfileini_asc and readfileini_bin in vacio.t on what should be done.
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   DOUBLE PRECISION:: w(ixG^T,nw)
   !-----------------------------------------------------------------------------
@@ -133,7 +133,7 @@ SUBROUTINE savefileout_special(qunit,w,ix^L)
   ! Check savefileout_asc and savefileout_bin in vacio.t on what should be done.
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: qunit,ix^L
   DOUBLE PRECISION:: w(ixG^T,nw)
@@ -148,7 +148,7 @@ SUBROUTINE savefilelog_special(qunit,w,ix^L)
   ! Check savefilelog_default on opening the file etc.
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: qunit,ix^L
   DOUBLE PRECISION:: w(ixG^T,nw)

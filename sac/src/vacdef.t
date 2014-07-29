@@ -89,7 +89,7 @@ MODULE constants
 END MODULE constants
 
 
-MODULE common_varibles
+module common_variables
   USE constants
   SAVE
 
@@ -202,4 +202,4 @@ MODULE common_varibles
 
   DOUBLE PRECISION:: maxviscoef
 
-END MODULE common_varibles
+end module common_variables

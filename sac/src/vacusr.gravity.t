@@ -27,7 +27,7 @@ SUBROUTINE addsource_grav(qdt,ixI^L,ixO^L,iws,qtC,w,qt,wnew)
   ! in iws. w is at time qtC, wnew is advanced from qt to qt+qdt.
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER::          ixI^L,ixO^L,iws(niw_)
   DOUBLE PRECISION:: qdt,qtC,qt,w(ixG^T,nw),wnew(ixG^T,nw)
@@ -98,7 +98,7 @@ END SUBROUTINE addsource_grav
 SUBROUTINE getdt_grav(w,ix^L)
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   DOUBLE PRECISION :: w(ixG^T,nw)
   INTEGER :: ix^L,idim

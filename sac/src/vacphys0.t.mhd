@@ -7,7 +7,7 @@ SUBROUTINE conserve(ix^L,w)
   ! Transform primitive variables into conservative ones
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: ix^L
   DOUBLE PRECISION:: w(ixG^T,nw)
@@ -34,7 +34,7 @@ SUBROUTINE primitive(ix^L,w)
   ! Transform conservative variables into primitive ones
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: ix^L
   DOUBLE PRECISION:: w(ixG^T,nw)
@@ -59,7 +59,7 @@ SUBROUTINE getv(w,ix^L,idim,v)
   ! Calculate v_idim=m_idim/rho within ix
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: ix^L,idim
   DOUBLE PRECISION:: w(ixG^T,nw),v(ixG^T)
@@ -85,7 +85,7 @@ SUBROUTINE getcmax(new_cmax,w,ix^L,idim,cmax)
   ! perpendicular to the magnetic field, and cs is the sound speed.
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   LOGICAL:: new_cmax
   INTEGER:: ix^L,idim
@@ -123,7 +123,7 @@ SUBROUTINE getcsound2prim(w,ix^L,csound2)
   ! csound2=gamma*p/rho
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   DOUBLE PRECISION:: w(ixG^T,nw),csound2(ixG^T)
   INTEGER:: ix^L
@@ -145,7 +145,7 @@ SUBROUTINE getcsound2(w,ix^L,csound2)
   ! csound2=gamma*p/rho
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   DOUBLE PRECISION:: w(ixG^T,nw),csound2(ixG^T)
   INTEGER:: ix^L
@@ -172,7 +172,7 @@ SUBROUTINE getpthermal(w,ix^L,p)
 
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   DOUBLE PRECISION:: w(ixG^T,nw),p(ixG^T)
   INTEGER:: ix^L
@@ -193,7 +193,7 @@ END SUBROUTINE getpthermal
 SUBROUTINE getptotal(w,ix^L,p)
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   DOUBLE PRECISION::  w(ixG^T,nw),p(ixG^T),gamma
   INTEGER:: ix^L
@@ -216,7 +216,7 @@ END SUBROUTINE getptotal
 SUBROUTINE getptotal_bg(w,ix^L,p)
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   DOUBLE PRECISION::  w(ixG^T,nw),p(ixG^T),gamma
   INTEGER:: ix^L

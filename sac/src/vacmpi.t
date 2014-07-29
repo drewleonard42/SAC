@@ -4,7 +4,7 @@ SUBROUTINE mpiinit
   ! Initialize MPI variables
 
   USE constants
-  USE common_varibles
+  USE common_variables
   !----------------------------------------------------------------------------
   CALL MPI_INIT(ierrmpi)
   CALL MPI_COMM_RANK (MPI_COMM_WORLD, ipe, ierrmpi)
@@ -22,7 +22,7 @@ END SUBROUTINE mpiinit
 SUBROUTINE mpifinalize
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   CALL MPI_BARRIER(MPI_COMM_WORLD,ierrmpi)
   CALL MPI_FINALIZE(ierrmpi)
@@ -36,7 +36,7 @@ SUBROUTINE ipe2ipeD(qipe,qipe^D)
   ! Convert serial processor index to directional processor indexes
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: qipe^D, qipe
   !-----------------------------------------------------------------------------
@@ -53,7 +53,7 @@ SUBROUTINE ipeD2ipe(qipe^D,qipe)
   ! Convert directional processor indexes to serial processor index
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: qipe^D, qipe
   !-----------------------------------------------------------------------------
@@ -70,7 +70,7 @@ SUBROUTINE mpisetnpeDipeD(name)
   ! For example _np0203 means np1=2, np2=3 for 2D.
 
   USE constants
-  USE common_varibles
+  USE common_variables
   CHARACTER(^LENNAME) :: name, nametail
   INTEGER:: i,qnpe^D
   LOGICAL:: npeDknown,npeDinname
@@ -150,7 +150,7 @@ SUBROUTINE mpineighbors(idir,hpe,jpe)
   ! direction.
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER :: idir,hpe,jpe,hpe^D,jpe^D
   !-----------------------------------------------------------------------------
@@ -171,7 +171,7 @@ SUBROUTINE mpigridsetup
   ! Distribute a grid of size nxall^D onto PE-s arranged in a cube of size npe^D
 
   USE constants
-  USE common_varibles
+  USE common_variables
   !-----------------------------------------------------------------------------
 !!!write(*,*)'nxall,npe=',nxall^D,npe^D
 
@@ -238,7 +238,7 @@ SUBROUTINE mpiix(ix^D,jpe)
   ! and set the processor number jpe to the processor that contains the cell
 
   USE constants
-  USE common_varibles
+  USE common_variables
   INTEGER :: ix^D, jpe, jpe^D
   !-----------------------------------------------------------------------------
 
@@ -260,7 +260,7 @@ SUBROUTINE mpiixlimits(ix^L)
   ! Convert global index limits to local index limits for this PE
 
   USE constants
-  USE common_varibles
+  USE common_variables
   INTEGER :: ix^L
   !-----------------------------------------------------------------------------
   {^DLOOP
@@ -285,7 +285,7 @@ SUBROUTINE mpistop(message)
   ! Stop MPI run in an orderly fashion
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   CHARACTER(*) :: message
   INTEGER :: nerrmpi
@@ -304,7 +304,7 @@ SUBROUTINE mpibound(nvar,var)
   ! Fill in ghost cells of var(ixG,nvar) from other processors
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER :: nvar
   DOUBLE PRECISION :: var(ixG^T,nvar)
@@ -382,7 +382,7 @@ SUBROUTINE mpisend(nvar,var,ix^L,qipe,iside)
   ! jside is 0 for min and 1 for max side of the grid for the sending PE
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER :: nvar
   DOUBLE PRECISION :: var(ixG^T,nvar)
@@ -416,7 +416,7 @@ SUBROUTINE mpirecvbuffer(nvar,ix^L,qipe,iside)
   ! and sent from side iside of the grid
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: nvar, ix^L, qipe, iside, n
 
@@ -444,7 +444,7 @@ SUBROUTINE mpibuffer2var(iside,nvar,var,ix^L)
 
   ! Copy mpibuffer(:,iside) into var(ix^L,1:nvar)
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER :: nvar
   DOUBLE PRECISION:: var(ixG^T,nvar)

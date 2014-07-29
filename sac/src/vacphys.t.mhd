@@ -10,7 +10,7 @@ SUBROUTINE keeppositive(ix^L,w)
   ! Keep pressure and density positive (following D.Ryu)
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER::          ix^L
   DOUBLE PRECISION:: w(ixG^T,nw)

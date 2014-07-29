@@ -10,7 +10,7 @@ SUBROUTINE readparameters(w)
   ! from the parameter file.
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   DOUBLE PRECISION:: w(ixG^T,nw)
 
@@ -542,7 +542,7 @@ SUBROUTINE readfileini(w)
   ! read. The compatibility of initial data with internal parameters is checked.
   
   USE constants
-  USE common_varibles
+  USE common_variables
 
   DOUBLE PRECISION:: w(ixG^T,nw)
 
@@ -615,7 +615,7 @@ SUBROUTINE readfileini_asc(w)
   !   w           - the initial flow variables
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   DOUBLE PRECISION:: w(ixG^T,nw)
 
@@ -691,7 +691,7 @@ SUBROUTINE readfileini_bin(w)
   ! The compatibility of initial data with internal parameters is checked.
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   DOUBLE PRECISION:: w(ixG^T,nw)
 
@@ -778,7 +778,7 @@ END SUBROUTINE readfileini_bin
 SUBROUTINE checkNdimNeqparNw(ndimini,neqparini,nwini,neqparin,nwin)
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: ndimini,neqparini,nwini,neqparin,nwin
   !-----------------------------------------------------------------------------
@@ -811,7 +811,7 @@ END SUBROUTINE checkNdimNeqparNw
 SUBROUTINE setixGixMix(ix^L)
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: ix^L,qnx^IFMPI
   !-----------------------------------------------------------------------------
@@ -871,7 +871,7 @@ SUBROUTINE setheaderstrings
   ! Check and/or put physics and equation parameter names into file header
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: i
   CHARACTER(^LENTYPE) :: physics
@@ -927,7 +927,7 @@ END SUBROUTINE setheaderstrings
 SUBROUTINE savefile(ifile,w)
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: ifile,ix^L
   DOUBLE PRECISION:: w(ixG^T,nw)
@@ -991,7 +991,7 @@ SUBROUTINE savefileout_asc(qunit,w,ix^L)
   ! line is fileheadout and not fileheadini.
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: qunit,ix^L,ix^D,iw,idim,ndimout
   DOUBLE PRECISION:: w(ixG^T,nw),qw(nw)
@@ -1036,7 +1036,7 @@ SUBROUTINE savefileout_bin(qunit,w,ix^L)
   ! line is fileheadout and not fileheadini.
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: qunit,ix^L,idim,iw,ndimout
   DOUBLE PRECISION:: w(ixG^T,nw)
@@ -1129,7 +1129,7 @@ SUBROUTINE savefilelog_default(qunit,w,ix^L)
   ! if residmin>0 is set in the parfile.
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: qunit,ix^L
   DOUBLE PRECISION:: w(ixG^T,nw)

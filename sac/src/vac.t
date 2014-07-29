@@ -11,7 +11,7 @@ PROGRAM vac
   ! Pulled upto FORTRAN 2008 by Stuart Mumford 2013
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: ifile,ierrcode,iw
   DOUBLE PRECISION:: w(ixG^T,nw),wnrm2,dtold,time0,time1
@@ -166,7 +166,7 @@ END PROGRAM vac
 SUBROUTINE startup
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: ifile,iw,ivector,idim,qnvector
   !-----------------------------------------------------------------------------
@@ -235,7 +235,7 @@ SUBROUTINE advance(iws,w)
   ! Add split sources and fluxes with unsplit sources
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: iws(niw_)
   DOUBLE PRECISION:: w(ixG^T,nw), w1(ixG^T,nw)
@@ -299,7 +299,7 @@ SUBROUTINE advance_expl(method,ix^L,iws,w1,w)
   ! w1 can be ised freely.
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   CHARACTER(^LENTYPE) :: method
   INTEGER :: ix^L,iws(niw_)
@@ -377,7 +377,7 @@ SUBROUTINE advect(method,ix^L,iws,idim^LIM,w1,w,firstsweep,lastsweep)
   ! Depending on typeadvance and implpar call advect1 several times
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   CHARACTER(^LENTYPE):: method
   INTEGER:: ix^L,iws(niw_),idim^LIM
@@ -502,7 +502,7 @@ SUBROUTINE advect1(method,qdt,ixI^L,iws,idim^LIM,qtC,wCT,qt,w,firstsweep,lastswe
   ! getboundaries
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   CHARACTER(^LENTYPE) :: method
   INTEGER:: ixI^L,ixO^L,iws(niw_),idim^LIM,idim
@@ -562,7 +562,7 @@ SUBROUTINE addsource2(qdt,ixII^L,ixOO^L,iws,qtC,wCT,qt,w)
   ! Add source within ixOO for iws: w=w+qdt*S[wCT]
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: ixI^L,ixO^L,ixII^L,ixOO^L,iws(niw_)
   DOUBLE PRECISION:: qdt,qtC,qt,wCT(ixG^T,nw),w(ixG^T,nw)
@@ -597,7 +597,7 @@ LOGICAL FUNCTION timetofinish(time0)
   ! or residual is small enough. Other conditions may be included.
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   DOUBLE PRECISION:: time0, cputime
   LOGICAL:: okfinish
@@ -622,7 +622,7 @@ LOGICAL FUNCTION timetosave(ifile)
   ! Other conditions may be included.
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   INTEGER:: ifile
   LOGICAL:: oksave
@@ -661,7 +661,7 @@ SUBROUTINE getdt_courant(w,ix^L)
   ! rotations while the value calculated here does not use a rotation.
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   DOUBLE PRECISION:: w(ixG^T,nw),cmax(ixG^T),courantmax,dtold
   INTEGER:: ix^L,idim

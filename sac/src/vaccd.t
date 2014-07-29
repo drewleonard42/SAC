@@ -13,7 +13,7 @@ SUBROUTINE centdiff4(qdt,ixI^L,ixO^L,iws,idim^LIM,qtC,wCT,qt,w)
   ! w is the old value at qt on input and the new value at qt+qdt on output.
 
   USE constants
-  USE common_varibles
+  USE common_variables
 
   DOUBLE PRECISION:: qdt,qtC,qt,wCT(ixG^T,nw),w(ixG^T,nw)
   INTEGER:: ixI^L,ixO^L,iws(niw_),idim^LIM
