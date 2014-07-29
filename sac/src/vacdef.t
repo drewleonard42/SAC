@@ -3,9 +3,9 @@ MODULE phys_constants
   SAVE
   
   INTEGER, PARAMETER :: biginteger=10000000
-  DOUBLE PRECISION, PARAMETER :: pi= 3.1415926535897932384626433832795
-  DOUBLE PRECISION, PARAMETER :: smalldouble=1.d-99, bigdouble=1.d+99
-  DOUBLE PRECISION, PARAMETER :: zero=0d0, one=1d0, two=2d0, half=0.5d0, quarter=0.25d0
+  REAL(kind=8), PARAMETER :: pi= 3.1415926535897932384626433832795
+  REAL(kind=8), PARAMETER :: smalldouble=1.d-99, bigdouble=1.d+99
+  REAL(kind=8), PARAMETER :: zero=0d0, one=1d0, two=2d0, half=0.5d0, quarter=0.25d0
   
 END MODULE phys_constants
 
@@ -97,8 +97,8 @@ module common_variables
   INTEGER:: ipe, ipe^D, npe, npe^D, nxall^D, nxpe^D, ierrmpi
   INTEGER:: ixPEmin^D, ixPEmax^D
   LOGICAL:: mpiupperB(ndim),mpilowerB(ndim)
-  DOUBLE PRECISION:: sendbuffer(nmpibuffer)
-  DOUBLE PRECISION:: recvbuffer(nmpibuffer,2)
+  REAL(kind=8):: sendbuffer(nmpibuffer)
+  REAL(kind=8):: recvbuffer(nmpibuffer,2)
   }
 
   ! Unit for reading input parameters.
@@ -109,7 +109,7 @@ module common_variables
 
   ! General temporary arrays, any subroutine call may change them 
   ! except for subroutines which say the opposite in their header
-  DOUBLE PRECISION:: tmp(ixG^T),tmp2(ixG^T)
+  REAL(kind=8):: tmp(ixG^T),tmp2(ixG^T)
 
   ! Number of errors during calculation
   INTEGER:: nerror(nerrcode)
@@ -121,35 +121,35 @@ module common_variables
   INTEGER:: ixM^L,ixG^L,nx^D,nx(ndim)
   INTEGER:: dixB^L
   ! x and dx are local for HPF
-  DOUBLE PRECISION:: x(IXG^T,ndim),dx(IXG^T,ndim)
-  DOUBLE PRECISION:: volume,dvolume(IXG^T)
-  DOUBLE PRECISION:: area(IXGLO1:IXGHI1),areaC(IXGLO1:IXGHI1)
-  DOUBLE PRECISION:: areadx(IXGLO1:IXGHI1),areaside(IXGLO1:IXGHI1)
+  REAL(kind=8):: x(IXG^T,ndim),dx(IXG^T,ndim)
+  REAL(kind=8):: volume,dvolume(IXG^T)
+  REAL(kind=8):: area(IXGLO1:IXGHI1),areaC(IXGLO1:IXGHI1)
+  REAL(kind=8):: areadx(IXGLO1:IXGHI1),areaside(IXGLO1:IXGHI1)
 
   ! Variables for generalized coordinates and polargrid
   LOGICAL::          gencoord, polargrid
-  {^IFGEN DOUBLE PRECISION:: surfaceC(IXG^T,ndim),normalC(IXG^T,ndim,ndim)}
-  {^NOGEN DOUBLE PRECISION:: surfaceC(2^D&,ndim), normalC(2^D&,ndim,ndim)}
+  {^IFGEN REAL(kind=8):: surfaceC(IXG^T,ndim),normalC(IXG^T,ndim,ndim)}
+  {^NOGEN REAL(kind=8):: surfaceC(2^D&,ndim), normalC(2^D&,ndim,ndim)}
 
   !Boundary region parameters
-  DOUBLE PRECISION:: fixB^D(-dixBlo:dixBhi^D%ixGLO^DD:ixGHI^DD,nw)
+  REAL(kind=8):: fixB^D(-dixBlo:dixBhi^D%ixGLO^DD:ixGHI^DD,nw)
   INTEGER:: nB,ixB^LIM(ndim,nhiB),idimB(nhiB),ipairB(nhiB)
   LOGICAL:: upperB(nhiB),fixedB(nw,nhiB),nofluxB(nw,ndim),extraB
   CHARACTER(^LENTYPE) :: typeB(nw,nhiB),typeBscalar(nhiB)
 
   !Equation and method parameters
-  DOUBLE PRECISION:: eqpar(neqpar+nspecialpar),procpar(nprocpar)
+  real(kind=8), target :: eqpar(neqpar+nspecialpar),procpar(nprocpar)
 
   ! Time step control parameters
-  DOUBLE PRECISION:: courantpar,dtpar,dtdiffpar,dtcourant(ndim),dtmrpc
+  REAL(kind=8):: courantpar,dtpar,dtdiffpar,dtcourant(ndim),dtmrpc
   LOGICAL:: dtcantgrow
   INTEGER:: slowsteps
 
   ! Parameters for the implicit techniques
-  {^IFPOISSON DOUBLE PRECISION:: wrk(ixG^T,nwrk) } 
-  {^IFIMPL DOUBLE PRECISION:: work(nwork) }
+  {^IFPOISSON REAL(kind=8):: wrk(ixG^T,nwrk) } 
+  {^IFIMPL REAL(kind=8):: work(nwork) }
   INTEGER:: nwimpl,nimpl
-  DOUBLE PRECISION:: implpar,impldiffpar,implerror,implrelax,impldwlimit
+  REAL(kind=8):: implpar,impldiffpar,implerror,implrelax,impldwlimit
   INTEGER:: implrestart,implrestart2,impliter,impliternr,implmrpcpar
   CHARACTER(^LENTYPE) :: typeimplinit,typeimpliter,typeimplmat
   LOGICAL:: implconserv,implnewton,implcentered,implnewmat
@@ -168,23 +168,23 @@ module common_variables
   LOGICAL:: divbfix,divbwave,divbconstrain,angmomfix,compactres,smallfix
   INTEGER:: idimsplit
   INTEGER:: nproc(nfile+2)
-  DOUBLE PRECISION:: entropycoef(nw),constraincoef
-  DOUBLE PRECISION:: smallp,smallpcoeff,smallrho,smallrhocoeff,vacuumrho
-  DOUBLE PRECISION:: muscleta1,muscleta2,musclomega,acmcoef(nw),acmexpo
+  REAL(kind=8):: entropycoef(nw),constraincoef
+  REAL(kind=8):: smallp,smallpcoeff,smallrho,smallrhocoeff,vacuumrho
+  REAL(kind=8):: muscleta1,muscleta2,musclomega,acmcoef(nw),acmexpo
   LOGICAL:: acmnolim, fourthorder
   INTEGER:: acmwidth
 
   !Previous time step and residuals
-  DOUBLE PRECISION:: wold(ixG^T,nw),residual,residmin,residmax
+  REAL(kind=8):: wold(ixG^T,nw),residual,residmin,residmax
 
   ! Flux storage for flux-CT and flux-CD methods !!! for MHD only !!! 
-  {^IFCT DOUBLE PRECISION:: fstore(ixG^T,ndim) }
+  {^IFCT REAL(kind=8):: fstore(ixG^T,ndim) }
 
   !Time parameters
   INTEGER:: step,istep,nstep,it,itmin,itmax,nexpl,nnewton,niter,nmatvec
-  DOUBLE PRECISION:: t,tmax,dt,dtmin,cputimemax
+  REAL(kind=8):: t,tmax,dt,dtmin,cputimemax
   LOGICAL:: tmaxexact
-  DOUBLE PRECISION:: tsave(nsavehi,nfile),tsavelast(nfile),dtsave(nfile)
+  REAL(kind=8):: tsave(nsavehi,nfile),tsavelast(nfile),dtsave(nfile)
   INTEGER:: itsave(nsavehi,nfile),itsavelast(nfile),ditsave(nfile)
   INTEGER:: isavet(nfile),isaveit(nfile)
 
@@ -200,6 +200,6 @@ module common_variables
   INTEGER:: ixtest1,ixtest2,ixtest3,iwtest,idimtest,ipetest^IFMPI
   LOGICAL:: oktest    !This is a local variable for all subroutines and functions
 
-  DOUBLE PRECISION:: maxviscoef
+  REAL(kind=8):: maxviscoef
 
 end module common_variables

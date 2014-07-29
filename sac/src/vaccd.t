@@ -15,11 +15,11 @@ SUBROUTINE centdiff4(qdt,ixI^L,ixO^L,iws,idim^LIM,qtC,wCT,qt,w)
   USE constants
   USE common_variables
 
-  DOUBLE PRECISION:: qdt,qtC,qt,wCT(ixG^T,nw),w(ixG^T,nw)
+  REAL(kind=8):: qdt,qtC,qt,wCT(ixG^T,nw),w(ixG^T,nw)
   INTEGER:: ixI^L,ixO^L,iws(niw_),idim^LIM
   LOGICAL :: transport
 
-  DOUBLE PRECISION:: v(ixG^T),f(ixG^T), fb(ixG^T)
+  REAL(kind=8):: v(ixG^T),f(ixG^T), fb(ixG^T)
   INTEGER:: iiw,iw,ix^L,idim,idir
   !-----------------------------------------------------------------------------
 

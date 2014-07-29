@@ -13,7 +13,7 @@ SUBROUTINE keeppositive(ix^L,w)
   USE common_variables
 
   INTEGER::          ix^L
-  DOUBLE PRECISION:: w(ixG^T,nw)
+  REAL(kind=8):: w(ixG^T,nw)
   LOGICAL:: toosmallp
   !-----------------------------------------------------------------------------
 

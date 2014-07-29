@@ -44,10 +44,10 @@ SUBROUTINE process(count,idim^LIM,w)
   USE common_variables
 
   INTEGER:: count,idim^LIM
-  DOUBLE PRECISION:: w(ixG^T,nw)
+  REAL(kind=8):: w(ixG^T,nw)
 
   LOGICAL:: oktime
-  DOUBLE PRECISION:: cputime,time1,timeproc
+  REAL(kind=8):: cputime,time1,timeproc
   DATA timeproc /0.D0/
 
   ! The processing should eliminate divergence of B.
@@ -90,7 +90,7 @@ SUBROUTINE getdt(w,ix^L)
   USE constants
   USE common_variables
 
-  DOUBLE PRECISION:: w(ixG^T,nw)
+  REAL(kind=8):: w(ixG^T,nw)
   INTEGER:: ix^L
   !-----------------------------------------------------------------------------
 
@@ -115,7 +115,7 @@ SUBROUTINE getdivb(w,ixO^L,divb)
   USE common_variables
 
   INTEGER::          ixO^L,ix^L,idim
-  DOUBLE PRECISION:: w(ixG^T,nw),divb(ixG^T)
+  REAL(kind=8):: w(ixG^T,nw),divb(ixG^T)
   !-----------------------------------------------------------------------------
 
   oktest=INDEX(teststr,'getdivb')>=1
@@ -158,7 +158,7 @@ SUBROUTINE getflux(w,ix^L,iw,idim,f,transport)
   USE common_variables
 
   INTEGER::          ix^L,iw,idim
-  DOUBLE PRECISION:: w(ixG^T,nw),f(ixG^T), fb(ixG^T)
+  REAL(kind=8):: w(ixG^T,nw),f(ixG^T), fb(ixG^T)
   LOGICAL::          transport
   !-----------------------------------------------------------------------------
 
@@ -239,7 +239,7 @@ SUBROUTINE addsource(qdt,ixI^L,ixO^L,iws,qtC,w,qt,wnew)
   USE common_variables
 
   INTEGER::          ixI^L,ixO^L,iws(niw_)
-  DOUBLE PRECISION:: qdt,qtC,qt,w(ixG^T,nw),wnew(ixG^T,nw)
+  REAL(kind=8):: qdt,qtC,qt,w(ixG^T,nw),wnew(ixG^T,nw)
   !-----------------------------------------------------------------------------
 
   oktest=INDEX(teststr,'addsource')>=1
@@ -279,8 +279,8 @@ SUBROUTINE addsource_divb(qdt,ixI^L,ixO^L,iws,qtC,w,qt,wnew)
   USE common_variables
 
   INTEGER::          ixI^L,ixO^L,iws(niw_),iiw,iw
-  DOUBLE PRECISION:: qdt,qtC,qt,w(ixG^T,nw),wnew(ixG^T,nw)
-  DOUBLE PRECISION:: divb(ixG^T)
+  REAL(kind=8):: qdt,qtC,qt,w(ixG^T,nw),wnew(ixG^T,nw)
+  REAL(kind=8):: divb(ixG^T)
   !-----------------------------------------------------------------------------
 
   ! Calculating div B involves first derivatives

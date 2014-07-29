@@ -204,7 +204,7 @@ SUBROUTINE mpireduce(a,mpifunc)
 
   USE constants
 
-  DOUBLE PRECISION :: a, alocal
+  REAL(kind=8) :: a, alocal
   INTEGER          :: mpifunc, ierrmpi
   !----------------------------------------------------------------------------
   alocal = a
@@ -221,7 +221,7 @@ SUBROUTINE mpiallreduce(a,mpifunc)
 
   USE constants
 
-  DOUBLE PRECISION :: a, alocal
+  REAL(kind=8) :: a, alocal
   INTEGER          :: mpifunc, ierrmpi
   !-----------------------------------------------------------------------------
   alocal = a
@@ -307,7 +307,7 @@ SUBROUTINE mpibound(nvar,var)
   USE common_variables
 
   INTEGER :: nvar
-  DOUBLE PRECISION :: var(ixG^T,nvar)
+  REAL(kind=8) :: var(ixG^T,nvar)
 
   ! processor indexes for left and right neighbors
   INTEGER :: hpe,jpe
@@ -385,7 +385,7 @@ SUBROUTINE mpisend(nvar,var,ix^L,qipe,iside)
   USE common_variables
 
   INTEGER :: nvar
-  DOUBLE PRECISION :: var(ixG^T,nvar)
+  REAL(kind=8) :: var(ixG^T,nvar)
   INTEGER :: ix^L, qipe, iside, n, ix^D, ivar
   !----------------------------------------------------------------------------
   oktest = INDEX(teststr,'mpisend')>0
@@ -447,7 +447,7 @@ SUBROUTINE mpibuffer2var(iside,nvar,var,ix^L)
   USE common_variables
 
   INTEGER :: nvar
-  DOUBLE PRECISION:: var(ixG^T,nvar)
+  REAL(kind=8):: var(ixG^T,nvar)
   INTEGER:: ix^L,iside,n,ix^D,ivar
   !-----------------------------------------------------------------------------
   oktest = INDEX(teststr,'buffer2var')>0

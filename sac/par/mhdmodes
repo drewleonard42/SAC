@@ -3,18 +3,18 @@
 /
 
 &filelist
-	filenameini='/data/smq11sjm/VAC/data/mhdmodes_2D.ini'
+	filenameini='/archive/io_testing/mhdmodes_2D.ini'
 
 	typefileini='binary'
-	filename=   '/data/smq11sjm/VAC/data/mhdmodes_2D.log',
-     		    '/data/smq11sjm/VAC/data/mhdmodes_2D.out'
-	typefileout='binary'
-        fullgridout= T
+	filename=   '/archive/mhdmodes_2D.log',
+     		    '/archive/mhdmodes_2D_'
+	typefileout='gdf'
+        fullgridout= F
         fullgridini= T
  /
 
 &savelist
-	dtsave=0.1,0.0001
+    dtsave=1,0.1
 
  /
 

@@ -15,7 +15,7 @@ SUBROUTINE specialini(ix^L,w)
   USE common_variables
 
   INTEGER:: ix^L
-  DOUBLE PRECISION:: w(ixG^T,nw)
+  REAL(kind=8):: w(ixG^T,nw)
   !-----------------------------------------------------------------------------
 
   CALL die('Special initial condition is not defined')
@@ -31,7 +31,7 @@ SUBROUTINE specialbound(qt,ix^L,iw,iB,w)
   USE common_variables
 
   INTEGER:: ix^L,iw,iB
-  DOUBLE PRECISION:: qt,w(ixG^T,nw)
+  REAL(kind=8):: qt,w(ixG^T,nw)
   !-----------------------------------------------------------------------------
 
   CALL die('Special boundary is not defined')
@@ -62,7 +62,7 @@ SUBROUTINE specialsource(qdt,ixI^L,ixO^L,iws,qtC,wCT,qt,w)
   USE common_variables
 
   INTEGER:: ixI^L,ixO^L,iws(niw_)
-  DOUBLE PRECISION:: qdt,qtC,qt,wCT(ixG^T,nw),w(ixG^T,nw)
+  REAL(kind=8):: qdt,qtC,qt,wCT(ixG^T,nw),w(ixG^T,nw)
 
   !This is some hyperdiffusion stabilisaton...
   IF(ABS(eqpar(nu_))>smalldouble)&
@@ -81,7 +81,7 @@ SUBROUTINE getdt_special(w,ix^L)
   USE constants
   USE common_variables
 
-  DOUBLE PRECISION:: w(ixG^T,nw)
+  REAL(kind=8):: w(ixG^T,nw)
   INTEGER:: ix^L
   !-----------------------------------------------------------------------------
 
@@ -105,7 +105,7 @@ SUBROUTINE specialeta(w,ix^L,idirmin)
   USE constants
   USE common_variables
 
-  DOUBLE PRECISION:: w(ixG^T,nw)
+  REAL(kind=8):: w(ixG^T,nw)
   INTEGER:: ix^L,idirmin
 
   CALL die('specialeta is not defined')
@@ -121,7 +121,7 @@ SUBROUTINE readfileini_special(w)
   USE constants
   USE common_variables
 
-  DOUBLE PRECISION:: w(ixG^T,nw)
+  REAL(kind=8):: w(ixG^T,nw)
   !-----------------------------------------------------------------------------
 
   CALL die('Special readfileini is not defined')
@@ -136,7 +136,7 @@ SUBROUTINE savefileout_special(qunit,w,ix^L)
   USE common_variables
 
   INTEGER:: qunit,ix^L
-  DOUBLE PRECISION:: w(ixG^T,nw)
+  REAL(kind=8):: w(ixG^T,nw)
   !-----------------------------------------------------------------------------
 
   CALL die('Special savefileout is not defined')
@@ -151,7 +151,7 @@ SUBROUTINE savefilelog_special(qunit,w,ix^L)
   USE common_variables
 
   INTEGER:: qunit,ix^L
-  DOUBLE PRECISION:: w(ixG^T,nw)
+  REAL(kind=8):: w(ixG^T,nw)
   !-----------------------------------------------------------------------------
 
   CALL die('Special savefilelog is not defined')

@@ -10,7 +10,7 @@ SUBROUTINE conserve(ix^L,w)
   USE common_variables
 
   INTEGER:: ix^L
-  DOUBLE PRECISION:: w(ixG^T,nw)
+  REAL(kind=8):: w(ixG^T,nw)
   !-----------------------------------------------------------------------------
 
 
@@ -37,7 +37,7 @@ SUBROUTINE primitive(ix^L,w)
   USE common_variables
 
   INTEGER:: ix^L
-  DOUBLE PRECISION:: w(ixG^T,nw)
+  REAL(kind=8):: w(ixG^T,nw)
   !-----------------------------------------------------------------------------
 
 
@@ -62,7 +62,7 @@ SUBROUTINE getv(w,ix^L,idim,v)
   USE common_variables
 
   INTEGER:: ix^L,idim
-  DOUBLE PRECISION:: w(ixG^T,nw),v(ixG^T)
+  REAL(kind=8):: w(ixG^T,nw),v(ixG^T)
   !-----------------------------------------------------------------------------
 
   oktest=INDEX(teststr,'getv')>=1
@@ -89,8 +89,8 @@ SUBROUTINE getcmax(new_cmax,w,ix^L,idim,cmax)
 
   LOGICAL:: new_cmax
   INTEGER:: ix^L,idim
-  DOUBLE PRECISION:: w(ixG^T,nw),cmax(ixG^T)
-  DOUBLE PRECISION:: csound2(ixG^T),cfast2(ixG^T)
+  REAL(kind=8):: w(ixG^T,nw),cmax(ixG^T)
+  REAL(kind=8):: csound2(ixG^T),cfast2(ixG^T)
   SAVE csound2,cfast2
   !-----------------------------------------------------------------------------
   oktest=INDEX(teststr,'getcmax')>=1
@@ -125,7 +125,7 @@ SUBROUTINE getcsound2prim(w,ix^L,csound2)
   USE constants
   USE common_variables
 
-  DOUBLE PRECISION:: w(ixG^T,nw),csound2(ixG^T)
+  REAL(kind=8):: w(ixG^T,nw),csound2(ixG^T)
   INTEGER:: ix^L
   !-----------------------------------------------------------------------------
 
@@ -147,7 +147,7 @@ SUBROUTINE getcsound2(w,ix^L,csound2)
   USE constants
   USE common_variables
 
-  DOUBLE PRECISION:: w(ixG^T,nw),csound2(ixG^T)
+  REAL(kind=8):: w(ixG^T,nw),csound2(ixG^T)
   INTEGER:: ix^L
   !-----------------------------------------------------------------------------
 
@@ -174,7 +174,7 @@ SUBROUTINE getpthermal(w,ix^L,p)
   USE constants
   USE common_variables
 
-  DOUBLE PRECISION:: w(ixG^T,nw),p(ixG^T)
+  REAL(kind=8):: w(ixG^T,nw),p(ixG^T)
   INTEGER:: ix^L
   !-----------------------------------------------------------------------------
 
@@ -195,7 +195,7 @@ SUBROUTINE getptotal(w,ix^L,p)
   USE constants
   USE common_variables
 
-  DOUBLE PRECISION::  w(ixG^T,nw),p(ixG^T),gamma
+  REAL(kind=8)::  w(ixG^T,nw),p(ixG^T),gamma
   INTEGER:: ix^L
   !-----------------------------------------------------------------------------
 
@@ -218,7 +218,7 @@ SUBROUTINE getptotal_bg(w,ix^L,p)
   USE constants
   USE common_variables
 
-  DOUBLE PRECISION::  w(ixG^T,nw),p(ixG^T),gamma
+  REAL(kind=8)::  w(ixG^T,nw),p(ixG^T),gamma
   INTEGER:: ix^L
   !-----------------------------------------------------------------------------
 

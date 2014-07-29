@@ -12,10 +12,10 @@ SUBROUTINE readparameters(w)
   USE constants
   USE common_variables
 
-  DOUBLE PRECISION:: w(ixG^T,nw)
+  REAL(kind=8):: w(ixG^T,nw)
 
   CHARACTER(^LENTYPE):: typepred(nw),typefull(nw),typeimpl(nw),typefilter(nw)
-  DOUBLE PRECISION:: muscleta
+  REAL(kind=8):: muscleta
   INTEGER:: i,j,k,iw,idim,iB,ifile,isave
   LOGICAL:: implmrpc,globalixtest^IFMPI
 
@@ -544,7 +544,7 @@ SUBROUTINE readfileini(w)
   USE constants
   USE common_variables
 
-  DOUBLE PRECISION:: w(ixG^T,nw)
+  REAL(kind=8):: w(ixG^T,nw)
 
   LOGICAL:: fileexist
   CHARACTER(91):: fhead
@@ -617,13 +617,13 @@ SUBROUTINE readfileini_asc(w)
   USE constants
   USE common_variables
 
-  DOUBLE PRECISION:: w(ixG^T,nw)
+  REAL(kind=8):: w(ixG^T,nw)
 
   LOGICAL:: fileexist
   INTEGER:: ios                           ! 0 if not EOF, -1 if EOF, >0 if error
   INTEGER:: ndimini,neqparini,neqparin,nwini,nwin ! values describing input data
   INTEGER:: ix^L,ix^D,idim,iw,ieqpar,snapshot
-  DOUBLE PRECISION:: eqparextra,wextra
+  REAL(kind=8):: eqparextra,wextra
   CHARACTER(^LENNAME) :: varnamesini
   !-----------------------------------------------------------------------------
 
@@ -693,13 +693,13 @@ SUBROUTINE readfileini_bin(w)
   USE constants
   USE common_variables
 
-  DOUBLE PRECISION:: w(ixG^T,nw)
+  REAL(kind=8):: w(ixG^T,nw)
 
   LOGICAL:: fileexist
   INTEGER:: ios                           ! 0 if not EOF, -1 if EOF, >0 if error
   INTEGER:: ndimini,neqparini,neqparin,nwini,nwin ! values describing input data
   INTEGER:: ix^L,idim,iw,ieqpar,snapshot
-  DOUBLE PRECISION:: eqparextra
+  REAL(kind=8):: eqparextra
   CHARACTER(^LENNAME) :: varnamesini
   !-----------------------------------------------------------------------------
 
@@ -930,7 +930,7 @@ SUBROUTINE savefile(ifile,w)
   USE common_variables
 
   INTEGER:: ifile,ix^L
-  DOUBLE PRECISION:: w(ixG^T,nw)
+  REAL(kind=8):: w(ixG^T,nw)
   CHARACTER(10):: itstring
   !-----------------------------------------------------------------------------
 
@@ -965,6 +965,8 @@ SUBROUTINE savefile(ifile,w)
         CALL savefileout_asc(unitini+ifile,w,ix^L)
      CASE('binary')
         CALL savefileout_bin(unitini+ifile,w,ix^L)
+     CASE('gdf')
+        call savefileout_gdf(w,ix^L)
      CASE default
         CALL die('Error in SaveFile: Unknown typefileout:'//typefileout)
      END SELECT
@@ -994,7 +996,7 @@ SUBROUTINE savefileout_asc(qunit,w,ix^L)
   USE common_variables
 
   INTEGER:: qunit,ix^L,ix^D,iw,idim,ndimout
-  DOUBLE PRECISION:: w(ixG^T,nw),qw(nw)
+  REAL(kind=8):: w(ixG^T,nw),qw(nw)
   LOGICAL:: fileopen
   !-----------------------------------------------------------------------------
 
@@ -1039,7 +1041,7 @@ SUBROUTINE savefileout_bin(qunit,w,ix^L)
   USE common_variables
 
   INTEGER:: qunit,ix^L,idim,iw,ndimout
-  DOUBLE PRECISION:: w(ixG^T,nw)
+  REAL(kind=8):: w(ixG^T,nw)
   LOGICAL:: fileopen
 
   !**************** slice
@@ -1114,6 +1116,91 @@ SUBROUTINE savefileout_bin(qunit,w,ix^L)
 END SUBROUTINE savefileout_bin
 
 !=============================================================================
+
+
+SUBROUTINE savefileout_gdf(w,ix^L)
+  
+  USE hdf5
+  use gdf
+  use sacgdf
+  use gdf_datasets
+  USE common_variables
+
+  IMPLICIT NONE
+
+  INTEGER, INTENT(IN) :: ix^L
+  REAL(kind=8), INTENT(IN):: w(ixG^T,nw)
+
+  INTEGER(HID_T) :: file_id
+  integer(HID_T) :: plist_id         !< Property list identifier
+  integer(HID_T) :: doml_g_id        !< domain list identifier
+  integer(HID_T) :: dom_g_id         !< domain group identifier
+  INTEGER :: error
+  
+  character(len=8) :: itstr
+
+  type(gdf_root_datasets_T) :: rd
+  type(gdf_parameters_T) :: gdf_sp
+  type(gdf_field_type_T), dimension(nw) :: field_types
+
+  class(*), dimension(:^D&), pointer :: d_ptr
+  real(kind=8), dimension(ix^S), target :: wdata
+
+  ! Open file
+  CALL h5open_f(error)
+  ! Create a property access list (for MPI later on)
+  call h5pcreate_f(H5P_FILE_ACCESS_F, plist_id, error)
+  ! Create the file
+  ! Convert the current iteration to a string
+  write(itstr, '(I8.8)') it
+  call h5fcreate_f(TRIM(filenameout)//itstr//'.gdf', H5F_ACC_TRUNC_F, file_id, error, access_prp=plist_id)
+
+  ! Create
+  ! Simulation Parameters
+  call gdf_sp%init(^ND)
+  gdf_sp%boundary_conditions = (/ 2, 2, 2, 2, 2, 2 /)
+  gdf_sp%cosmological_simulation = 0
+  gdf_sp%current_time = t
+  gdf_sp%dimensionality = ^ND
+  gdf_sp%domain_dimensions = nx ! on disk
+  gdf_sp%domain_left_edge = x(ixmin^D, :) !bottom left corner
+  gdf_sp%domain_right_edge = x(ixmax^D, :) ! top right corner
+  gdf_sp%field_ordering = 1
+  gdf_sp%num_ghost_zones = 0 !on disk
+  gdf_sp%refine_by = 0
+  gdf_sp%unique_identifier = "sacgdf2014"
+  
+  ! Initilize the data
+  call rd%init(^ND, 1)
+  
+  rd%grid_parent_id = 0
+  rd%grid_left_index(:, 1) = (/ 0, 0 /)
+  rd%grid_dimensions(:, 1) = nx
+  rd%grid_level = 0
+  rd%grid_particle_count(:, 1) = (/ 0 /)
+
+  call sacgdf_make_field_types(field_types)
+  
+  call sacgdf_write_file(file_id, rd, gdf_sp, field_types)
+  
+  ! Now write the datasets
+  ! Create field groups
+  call h5gcreate_f(file_id, "data", dom_g_id, error) !Create /data
+  call h5gcreate_f(dom_g_id, "grid_0000000000", doml_g_id, error) !Create the top grid
+  
+  ! WRITE ACTUAL DATA HERE
+  
+  wdata(ix^S) = w(ix^S, m1_) / (w(ix^S, rho_) + w(ix^S, rhob_))
+  d_ptr => wdata
+  call write_dataset(doml_g_id, 'velocity_x', d_ptr, plist_id)
+  
+
+  CALL h5fclose_f(file_id, error)
+  CALL h5close_f(error)
+  
+END SUBROUTINE savefileout_gdf
+
+!=============================================================================
 SUBROUTINE savefilelog_default(qunit,w,ix^L)
 
   ! This version saves into filename(filelog_) the following formatted data:
@@ -1132,10 +1219,10 @@ SUBROUTINE savefilelog_default(qunit,w,ix^L)
   USE common_variables
 
   INTEGER:: qunit,ix^L
-  DOUBLE PRECISION:: w(ixG^T,nw)
+  REAL(kind=8):: w(ixG^T,nw)
   INTEGER:: iw
   LOGICAL:: fileopen
-  DOUBLE PRECISION:: wmean(nw)
+  REAL(kind=8):: wmean(nw)
   !-----------------------------------------------------------------------------
 
   IF(ipe==0)THEN^IFMPI
