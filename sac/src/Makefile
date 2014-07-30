@@ -87,7 +87,7 @@ gdf :
 	$(FOR) $(FORFLG) -c $(GDF_INCLUDES)
 
 vac : gdf $(VACOBJ) $(LIBS_)
-	$(FOR) $(FORFLG) -o $(VACDIR)/vac $(VACOBJ) $(LIBS) $(GDF_INCLUDES)
+	$(FOR) $(FORFLG) -o $(VACDIR)/vac $(GDF_INCLUDES) $(VACOBJ) $(LIBS) 
 
 ###### Removing object files, precompiled Fortran files, and symbolic links
 

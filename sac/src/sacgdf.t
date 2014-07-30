@@ -22,6 +22,11 @@ contains
 
 
 
+
+
+
+
+
   subroutine sacgdf_write_eqpar(file_id)
     ! Convert simulation parameters to the eqpar array
     use common_variables
@@ -78,11 +83,11 @@ contains
 
     select case (nw)
     case (7)
-       call sacgdf_make_field_types_1D(field_types)
+       {^IFONED call sacgdf_make_field_types_1D(field_types) }
     case (10)
-       call sacgdf_make_field_types_2D(field_types)
+       {^IFTWOD call sacgdf_make_field_types_2D(field_types) }
     case (13)
-       call sacgdf_make_field_types_3D(field_types)
+       {^IFTHREED call sacgdf_make_field_types_3D(field_types) }
     case default
        call die("Wrong nw")
     end select
