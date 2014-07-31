@@ -3,9 +3,9 @@
 /
 
 &filelist
-	filenameini='/archive/io_testing/mhdmodes_2D.ini'
+	filenameini='/archive/mhdmodes_2D_ini.gdf'
 
-	typefileini='binary'
+	typefileini='gdf'
 	filename=   '/archive/mhdmodes_2D.log',
      		    '/archive/mhdmodes_2D_'
 	typefileout='gdf'
@@ -15,6 +15,7 @@
 
 &savelist
     dtsave=1,0.1
+    itsave(1,2)=0
 
  /
 

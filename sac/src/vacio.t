@@ -585,6 +585,8 @@ SUBROUTINE readfileini(w)
      CALL readfileini_asc(w)
   CASE('binary')
      CALL readfileini_bin(w)
+  CASE ('gdf')
+     CALL readfileini_gdf(w)
   CASE default
      CALL die('Error in VAC: Unknown typefileini='//typefileini)
   END SELECT
@@ -773,6 +775,90 @@ SUBROUTINE readfileini_bin(w)
 
   RETURN
 END SUBROUTINE readfileini_bin
+
+subroutine readfileini_gdf(w)
+  
+  use gdf, only: gdf_parameters_T, gdf_root_datasets_T, gdf_field_type_T
+  use hdf5, only: h5open_f, h5gopen_f, h5fopen_f, h5fclose_f, h5close_f, HID_T, H5F_ACC_RDONLY_F
+  use sacgdf, only: sacgdf_read_file, build_x_array
+  use gdf_datasets, only: read_dataset
+  use common_variables, only: ixGlo^D, ixGhi^D, nw, filenameini, nx, x, t, gencoord, fileheadini
+
+  implicit none
+
+  real(kind=8), intent(in) :: w(ixG^T,nw)
+  
+  integer(kind=4) :: error
+  integer(HID_T) :: file_id, grid_g_id, grid_z_id
+  type(gdf_parameters_T) :: gdf_sp
+  type(gdf_root_datasets_T) :: gdf_rd
+  type(gdf_field_type_T), dimension(:), allocatable :: field_types
+  character(len=60) :: software_name, software_version
+  class(*), dimension(:, :, :), pointer :: r_ptr
+  real(kind=8), dimension(:, :, :), allocatable, target :: wdata3D
+
+  integer:: ndimini,neqparini,neqparin,nwini,nwin ! values describing input data
+  integer:: ix^L
+  
+
+  ! just in case you are reading in a gdf and saving out a binary
+  fileheadini = 'gdf'
+
+  ! Open the interface
+  call h5open_f(error)
+  
+  ! Open a file for reading only
+  call h5fopen_f(trim(filenameini), H5F_ACC_RDONLY_F, file_id, error)
+
+  ! init the objects
+  call gdf_sp%init()
+  call gdf_rd%init(1)
+
+  ! Read the file
+  call sacgdf_read_file(file_id, software_name, software_version, &
+       gdf_rd, gdf_sp, field_types)
+
+  ! Decode the gdf data structures
+  t = gdf_sp%current_time(1)
+  ndimini = gdf_sp%dimensionality(1)
+  nwini = size(field_types, 1)
+  ! Set neqpar
+  {^IFONED neqparini = 5}
+  {^IFTWOD neqparini = 6}
+  {^IFTHREED neqparini = 7}
+  gencoord = ndimini<0
+  ! Validate parameters?
+  call checkNdimNeqparNw(ndimini,neqparini,nwini,neqparin,nwin)
+
+  nx = gdf_sp%domain_dimensions(:ndimini)
+
+  ! This set's up the global indicies based on nx and also
+  ! deals with the MPI indicies etc.
+  call setixGixMix(ix^L)
+
+  ! Build the x array
+  call build_x_array(ix^L, nx, gdf_sp%domain_left_edge(:ndimini), gdf_sp%domain_right_edge(:ndimini), x)
+  
+  ! Reconstruct the w array
+  ! Allocate the wdata3D array
+  allocate(wdata3D(gdf_sp%domain_dimensions(1), &
+                   gdf_sp%domain_dimensions(2), &
+                   gdf_sp%domain_dimensions(3)))
+
+  ! Create field groups
+  call h5gopen_f(file_id, "data", grid_g_id, error) !Create /data
+  call h5gopen_f(grid_g_id, "grid_0000000000", grid_z_id, error) !Create the top grid
+
+  r_ptr => wdata3D
+  call read_dataset(grid_z_id, 'density_bg', r_ptr)
+  
+  print*, maxval(wdata3D)
+
+  
+  ! Close the file and interface
+  call h5fclose_f(file_id, error)
+  call h5close_f(error)
+end subroutine readfileini_gdf
 
 !=============================================================================
 SUBROUTINE checkNdimNeqparNw(ndimini,neqparini,nwini,neqparin,nwin)
@@ -1170,8 +1256,10 @@ SUBROUTINE savefileout_gdf(w,ix^L)
   gdf_sp%current_time = t
   gdf_sp%dimensionality = ^ND
   gdf_sp%domain_dimensions = gdf_nx ! on disk
-  gdf_sp%domain_left_edge = x(ixmin^D, :) !bottom left corner
-  gdf_sp%domain_right_edge = x(ixmax^D, :) ! top right corner
+  gdf_sp%domain_left_edge = (/ 0, 0, 0 /)
+  gdf_sp%domain_right_edge = (/ 0, 0, 0 /)
+  gdf_sp%domain_left_edge(:^ND) = x(ixmin^D, :) !bottom left corner
+  gdf_sp%domain_right_edge(:^ND) = x(ixmax^D, :) ! top right corner
   gdf_sp%field_ordering = 1
   gdf_sp%num_ghost_zones = 0 !on disk
   gdf_sp%refine_by = 0
@@ -1292,7 +1380,6 @@ END SUBROUTINE flushunit
 ! end module vacio
 !##############################################################################
 
-
   subroutine sacgdf_write_datasets(place, plist_id, w, ix^L)
     use hdf5, only: HID_T
     use gdf_datasets
@@ -1345,7 +1432,7 @@ END SUBROUTINE flushunit
     wdata(ix^S) = w(ix^S, rho_)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
-    call write_dataset(place, 'denisty_pert', d_ptr, plist_id)
+    call write_dataset(place, 'density_pert', d_ptr, plist_id)
 
     ! Denisty bg
     wdata(ix^S) = w(ix^S, rhob_)

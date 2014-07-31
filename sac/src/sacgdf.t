@@ -3,25 +3,42 @@ module sacgdf
 
 contains
   
-  subroutine sacgdf_write_file(file_id, rd, gdf_sp, field_types)
+  subroutine sacgdf_write_file(file_id, gdf_rd, gdf_sp, field_types)
     use hdf5, only: HID_T
     use gdf, only: gdf_write_file, gdf_root_datasets_T, gdf_parameters_T, gdf_field_type_T
     implicit none
     
     integer(HID_T), intent(inout) :: file_id
-    type(gdf_root_datasets_T), intent(in) :: rd
-    type(gdf_parameters_T), intent(in) :: gdf_sp
-    type(gdf_field_type_T), dimension(:), intent(in) :: field_types
-    
-    call gdf_write_file(file_id, "Sheffield Advanced Code", "GDF Testing version", &
-         rd, gdf_sp, field_types)
+    type(gdf_root_datasets_T), intent(inout) :: gdf_rd
+    type(gdf_parameters_T), intent(inout) :: gdf_sp
+    type(gdf_field_type_T), dimension(:), intent(inout) :: field_types
 
+    call gdf_write_file(file_id, "Sheffield Advanced Code", "GDF Testing version", &
+         gdf_rd, gdf_sp, field_types)
+    
     call sacgdf_write_eqpar(file_id)
     
   end subroutine sacgdf_write_file
 
 
+  subroutine sacgdf_read_file(file_id, software_name, software_version, &
+       gdf_rd, gdf_sp, field_types)
+    use hdf5, only: HID_T
+    use gdf, only: gdf_read_file, gdf_root_datasets_T, gdf_parameters_T, gdf_field_type_T
+    implicit none
+    
+    integer(HID_T), intent(inout) :: file_id
+    type(gdf_root_datasets_T), intent(inout) :: gdf_rd
+    type(gdf_parameters_T), intent(inout) :: gdf_sp
+    type(gdf_field_type_T), dimension(:), allocatable, intent(inout) :: field_types
+    character(len=*), intent(out) :: software_name, software_version
+    
+    call gdf_read_file(file_id, software_name, software_version, &
+         gdf_rd, gdf_sp, field_types)
 
+    call sacgdf_read_eqpar(file_id)
+    
+  end subroutine sacgdf_read_file
 
 
 
@@ -40,6 +57,8 @@ contains
     integer(HID_T) :: g_id
     integer :: error
     real(kind=8), dimension(:), pointer :: r_ptr
+    integer(kind=4), dimension(:), pointer :: i4_ptr
+    integer(kind=4), dimension(1), target :: it_arr
 
     call h5gopen_f(file_id, 'simulation_parameters', g_id, error)
 
@@ -62,12 +81,18 @@ contains
 
     }
     {^IFTHREED
+    r_ptr => eqpar(grav2_:grav2_)
+    call create_attribute(g_id, 'gravity2', r_ptr
     r_ptr => eqpar(grav3_:grav3_)
     call create_attribute(g_id, 'gravity3', 
     }
 
     r_ptr => eqpar(nu_:nu_)
     call create_attribute(g_id, 'nu', r_ptr)
+
+    it_arr(1) = it
+    i4_ptr => it_arr
+    call create_attribute(g_id, 'current_iteration', i4_ptr)
 
     call h5gclose_f(g_id, error)
 
@@ -220,36 +245,86 @@ contains
 
   end subroutine sacgdf_make_field_types_3D
   
-!!$  subroutine sacgdf_read_eqpar(file_id, dimensionality)
-!!$    ! Convert simulation parameters to the eqpar array
-!!$    use common_variables
-!!$    use hdf5, only: HID_T, h5gopen_f, h5gclose_f
-!!$    use helpers_hdf5, only: read_attribute
-!!$
-!!$    implicit none
-!!$
-!!$    integer(HID_T), intent(in) :: file_id
-!!$    integer, intent(in) :: dimensionality
-!!$    
-!!$    integer(HID_T) :: g_id
-!!$    integer :: error
-!!$    
-!!$
-!!$    call h5gopen_f(file_id, 'simulation_parameters', g_id, error)
-!!$    call read_attribute(g_id, 'gamma', eqpar(gamma_))
-!!$    call read_attribute(g_id, 'eta', eqpar(eta_))
-!!$    call read_attribute(g_id, 'gravity0', eqpar(grav0_))
-!!$    call read_attribute(g_id, 'gravity1', eqpar(grav1_))
-!!$    ! Read the extra parameters only if we are 2D or 3D
-!!$    {^IFTWOD
-!!$    call read_attribute(g_id, 'gravity2', eqpar(grav2_))
-!!$    }
-!!$    {^IFTHREED
-!!$    call read_attribute(g_id, 'gravity3', eqpar(grav3_))
-!!$    }
-!!$    call read_attribute(g_id, 'nu', eqpar(nu_))
-!!$    call h5close_f(g_id, error)
-!!$
-!!$  end subroutine sacgdf_read_eqpar
-  
+  subroutine sacgdf_read_eqpar(file_id)
+    ! Convert simulation parameters to the eqpar array
+    use common_variables
+    use hdf5, only: HID_T, h5gopen_f, h5gclose_f
+    use helpers_hdf5, only: read_attribute
+
+    implicit none
+
+    integer(HID_T), intent(in) :: file_id
+    
+    integer(HID_T) :: g_id
+    integer :: error
+
+    real(kind=8), dimension(:), pointer :: r_ptr
+    integer(kind=4), dimension(:), pointer :: i4_ptr
+    integer(kind=4), dimension(1), target :: it_arr
+    
+
+    call h5gopen_f(file_id, 'simulation_parameters', g_id, error)
+    r_ptr => eqpar(gamma_:gamma_)
+    call read_attribute(g_id, 'gamma', r_ptr)
+
+    r_ptr => eqpar(eta_:eta_)
+    call read_attribute(g_id, 'eta', r_ptr)
+
+    r_ptr => eqpar(grav0_:grav0_)
+    call read_attribute(g_id, 'gravity0', r_ptr)
+
+    r_ptr => eqpar(grav1_:grav1_)
+    call read_attribute(g_id, 'gravity1', r_ptr)
+
+    ! Read the extra parameters only if we are 2D or 3D
+    {^IFTWOD
+    r_ptr => eqpar(grav2_:grav2_)
+    call read_attribute(g_id, 'gravity2', r_ptr)
+    }
+    {^IFTHREED
+    r_ptr => eqpar(grav2_:grav2_)
+    call read_attribute(g_id, 'gravity2', r_ptr)
+    r_ptr => eqpar(grav3_:grav3_)
+    call read_attribute(g_id, 'gravity3', r_ptr)
+    }
+
+    r_ptr => eqpar(nu_:nu_)
+    call read_attribute(g_id, 'nu', r_ptr)
+
+    i4_ptr => it_arr
+    call read_attribute(g_id, 'current_iteration', i4_ptr)
+    it = it_arr(1)
+
+    call h5gclose_f(g_id, error)
+
+  end subroutine sacgdf_read_eqpar
+
+  subroutine build_x_array(ix^L, nx, left_edge, right_edge, x)
+    ! Construct the x array (which is cell centred) from the left_edge and right_edge
+    ! values, which are also assumed to be cell centred.
+    implicit none
+
+    integer, intent(in) :: ix^L
+    integer, dimension(^ND), intent(in) :: nx
+    real(kind=8), dimension(^ND), intent(in) :: left_edge, right_edge
+    real(kind=8), dimension(:^D&,:), intent(inout) :: x
+
+    integer :: ix^D
+    real(kind=8) :: dx^D
+    
+!!$    ! Set ixmin = 1
+!!$    ixmin^D=1;
+!!$    ! Set ixmax to ixmin+nx
+!!$    ixmax^D=ixmin^D+nx(^D)-1;
+
+    dx^D=(right_edge(^D)-left_edge(^D))/nx(^D);
+
+    {
+    forall(ix^DD=ixmin^DD:ixmax^DD)
+       x(ix^DD,^D)= ((ix^D-ixmin^D)*right_edge(^D) + (ixmax^D-ix^D)*left_edge(^D)) / (ixmax^D-ixmin^D) 
+    end forall
+    \}
+
+  end subroutine build_x_array
+
 end module sacgdf
