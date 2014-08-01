@@ -808,6 +808,7 @@ subroutine readfileini_gdf(w)
   call h5open_f(error)
   
   ! Open a file for reading only
+  print*, trim(filenameini)
   call h5fopen_f(trim(filenameini), H5F_ACC_RDONLY_F, file_id, error)
 
   ! init the objects
@@ -840,19 +841,14 @@ subroutine readfileini_gdf(w)
   call build_x_array(ix^L, nx, gdf_sp%domain_left_edge(:ndimini), gdf_sp%domain_right_edge(:ndimini), x)
   
   ! Reconstruct the w array
-  ! Allocate the wdata3D array
-  allocate(wdata3D(gdf_sp%domain_dimensions(1), &
-                   gdf_sp%domain_dimensions(2), &
-                   gdf_sp%domain_dimensions(3)))
-
   ! Create field groups
   call h5gopen_f(file_id, "data", grid_g_id, error) !Create /data
   call h5gopen_f(grid_g_id, "grid_0000000000", grid_z_id, error) !Create the top grid
 
   r_ptr => wdata3D
-  call read_dataset(grid_z_id, 'density_bg', r_ptr)
-  
-  print*, maxval(wdata3D)
+  call read_dataset(grid_z_id, 'internal_energy_pert', r_ptr)
+  print*, shape(wdata3D)
+  print*, wdata3D(50,50,1)
 
   
   ! Close the file and interface
