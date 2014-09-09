@@ -1,0 +1,52 @@
+&testlist 
+    teststr='readfileini'
+/
+
+&filelist
+	filenameini='/archive/mhdmodes_2D_ini.gdf'
+
+	typefileini='gdf'
+	filename=   '/archive/mhdmodes_2D.log',
+     		    '/archive/mhdmodes_2D'
+	typefileout='gdf'
+        fullgridout= F
+        fullgridini= T
+ /
+
+&savelist
+    dtsave=1,0.1
+    itsave(1,2)=0
+
+ /
+
+ &stoplist
+	tmax=0.2d0
+	itmax = 10000
+ /
+
+ &methodlist
+
+	wnames=		'h 	m1  	 m2	e	b1	b2	eb	rhob	bg1	bg2'
+	typefull=	6*'cd4',4*'nul'
+        typeadvance=    'onestep'
+	typefilter=	10*'nul'
+	dimsplit=	F
+	sourcesplit=	F
+	divBfix=	F
+	smallp= 	10.d0
+ /
+
+ &boundlist
+	typeB=	10*'fixed'
+		10*'fixed'
+		10*'fixed'
+		10*'fixed'
+		10*'fixed'
+		10*'fixed'
+				
+ /
+
+ &paramlist
+	courantpar=0.2
+
+ /

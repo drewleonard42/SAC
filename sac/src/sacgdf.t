@@ -327,4 +327,156 @@ contains
 
   end subroutine build_x_array
 
+  subroutine sacgdf_read_datasets(place, plist_id, w, ix^L)
+    use hdf5, only: HID_T
+    use gdf_datasets
+    use common_variables, only: ixGhi^D, ixGlo^D, nw
+
+    implicit none
+
+    integer(HID_T), intent(inout) :: place
+    integer(HID_T), intent(inout) :: plist_id         !< Property list identifier
+    integer, intent(in) :: ix^L
+    real(kind=8), intent(inout):: w(ixG^T,nw)
+
+
+    call sacgdf_read_datasets_1D(place, plist_id, w, ix^L)
+    {^IFTWOD   call sacgdf_read_datasets_2D(place, plist_id, w, ix^L) }
+    {^IFTHREED call sacgdf_read_datasets_3D(place, plist_id, w, ix^L) }
+
+  end subroutine sacgdf_read_datasets
+
+  subroutine sacgdf_read_datasets_1D(place, plist_id, w, ix^L)
+    use hdf5, only: HID_T
+    use gdf_datasets, only: read_real_dataset
+    use common_variables, only: rho_, rhob_, e_, eb_, m1_, b1_, bg1_
+    use common_variables, only: ixGhi^D, ixGlo^D, nw, nx
+
+    implicit none
+
+    integer(HID_T), intent(inout) :: place
+    integer(HID_T), intent(inout) :: plist_id         !< Property list identifier
+    integer, intent(in) :: ix^L
+    real(kind=8), intent(inout) :: w(ixG^T,nw)
+
+    real(kind=8), dimension(:, :, :), allocatable :: wdata3D
+
+    ! Density pert
+    call read_real_dataset(place, 'density_pert', wdata3D)
+    w(ix^S, rho_) = reshape(wdata3D, nx)
+    deallocate(wdata3D)
+
+    ! Denisty bg
+    call read_real_dataset(place, 'density_bg', wdata3D)
+    w(ix^S, rhob_) = reshape(wdata3D, nx)
+    deallocate(wdata3D)
+
+    ! Velocity
+    call read_real_dataset(place, 'velocity_x', wdata3D)
+    w(ix^S, m1_) = reshape(wdata3D, nx) * (w(ix^S, rho_) + w(ix^S, rhob_))
+    deallocate(wdata3D)
+
+    ! internal energy pert
+    call read_real_dataset(place, 'internal_energy_pert', wdata3D)
+    w(ix^S, e_) = reshape(wdata3D, nx)
+    deallocate(wdata3D)
+
+    ! internal energy bg
+    call read_real_dataset(place, 'internal_energy_bg', wdata3D)
+    w(ix^S, eb_) = reshape(wdata3D, nx)
+    deallocate(wdata3D)
+
+    ! Mag field pert
+    call read_real_dataset(place, 'mag_field_x_pert', wdata3D)
+    w(ix^S, b1_) = reshape(wdata3D, nx)
+    deallocate(wdata3D)
+
+    ! Mag field bg
+    call read_real_dataset(place, 'mag_field_x_bg', wdata3D)
+    w(ix^S, bg1_) = reshape(wdata3D, nx)
+    deallocate(wdata3D)
+    
+  end subroutine sacgdf_read_datasets_1D
+
+{^IFTWOD
+  subroutine sacgdf_read_datasets_2D(place, plist_id, w, ix^L)
+    use hdf5, only: HID_T
+    use gdf_datasets, only: read_real_dataset
+    use common_variables, only: rho_, rhob_, m2_, b2_, bg2_
+    use common_variables, only: ixGhi^D, ixGlo^D, nw, nx
+
+    implicit none
+
+    integer(HID_T), intent(inout) :: place
+    integer(HID_T), intent(inout) :: plist_id         !< Property list identifier
+    integer, intent(in) :: ix^L
+    real(kind=8), intent(inout) :: w(ixG^T,nw)
+
+    real(kind=8), dimension(:, :, :), allocatable :: wdata3D
+
+    ! Velocity
+    call read_real_dataset(place, 'velocity_y', wdata3D)
+    w(ix^S, m2_) = reshape(wdata3D, nx) * (w(ix^S, rho_) + w(ix^S, rhob_))
+    deallocate(wdata3D)
+
+     ! Mag field pert
+    call read_real_dataset(place, 'mag_field_y_pert', wdata3D)
+    w(ix^S, b2_) = reshape(wdata3D, nx)
+    deallocate(wdata3D)
+
+    ! Mag field bg
+    call read_real_dataset(place, 'mag_field_y_bg', wdata3D)
+    w(ix^S, bg2_) = reshape(wdata3D, nx)
+    deallocate(wdata3D)
+    
+  end subroutine sacgdf_read_datasets_2D
+}
+{^IFTHREED
+  subroutine sacgdf_read_datasets_3D(place, plist_id, w, ix^L)
+    use hdf5, only: HID_T
+    use gdf_datasets, only: read_real_dataset
+    use common_variables, only: rho_, rhob_, m3_, b3_, bg3_
+    use common_variables, only: ixGhi^D, ixGlo^D, nw, nx
+
+    implicit none
+
+    integer(HID_T), intent(inout) :: place
+    integer(HID_T), intent(inout) :: plist_id         !< Property list identifier
+    integer, intent(in) :: ix^L
+    real(kind=8), intent(inout) :: w(ixG^T,nw)
+
+    real(kind=8), dimension(:, :, :), allocatable :: wdata3D
+
+    ! Velocity
+    call read_real_dataset(place, 'velocity_y', wdata3D)
+    w(ix^S, m2_) = reshape(wdata3D, nx) * (w(ix^S, rho_) + w(ix^S, rhob_))
+    deallocate(wdata3D)
+
+     ! Mag field pert
+    call read_real_dataset(place, 'mag_field_y_pert', wdata3D)
+    w(ix^S, b2_) = reshape(wdata3D, nx)
+    deallocate(wdata3D)
+
+    ! Mag field bg
+    call read_real_dataset(place, 'mag_field_y_bg', wdata3D)
+    w(ix^S, bg2_) = reshape(wdata3D, nx)
+    deallocate(wdata3D)
+
+    ! Velocity
+    call read_real_dataset(place, 'velocity_z', wdata3D)
+    w(ix^S, m3_) = reshape(wdata3D, nx) * (w(ix^S, rho_) + w(ix^S, rhob_))
+    deallocate(wdata3D)
+
+     ! Mag field pert
+    call read_real_dataset(place, 'mag_field_z_pert', wdata3D)
+    w(ix^S, b3_) = reshape(wdata3D, nx)
+    deallocate(wdata3D)
+
+    ! Mag field bg
+    call read_real_dataset(place, 'mag_field_z_bg', wdata3D)
+    w(ix^S, bg3_) = reshape(wdata3D, nx)
+    deallocate(wdata3D)
+    
+  end subroutine sacgdf_read_datasets_3D
+}
 end module sacgdf

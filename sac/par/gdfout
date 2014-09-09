@@ -3,11 +3,11 @@
 /
 
 &filelist
-	filenameini='/archive/mhdmodes_2D_ini.gdf'
+	filenameini='/archive/io_testing/mhdmodes_2D.ini'
 
-	typefileini='gdf'
+	typefileini='binary'
 	filename=   '/archive/mhdmodes_2D.log',
-     		    '/archive/mhdmodes_2D_'
+     		    '/archive/mhdmodes_2D'
 	typefileout='gdf'
         fullgridout= F
         fullgridini= T
