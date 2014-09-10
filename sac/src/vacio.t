@@ -211,6 +211,7 @@ subroutine readparameters(w)
   endif
 
   call readfileini(w)
+  print*, "back in readparams"
 
   ! Default for output header line
   fileheadout=fileheadini
@@ -531,6 +532,8 @@ subroutine readparameters(w)
 
   call setheaderstrings
 
+  print*, "end readparameters"
+
   return 
 end subroutine readparameters
 
@@ -592,6 +595,7 @@ subroutine readfileini(w)
      call die('Error in VAC: Unknown typefileini='//typefileini)
   end select
 
+  print*, "out readini"
   return
 end subroutine readfileini
 
@@ -739,6 +743,10 @@ subroutine readfileini_bin(w)
      ! deals with the MPI indicies etc.
      call setixGixMix(ix^L) 
 
+     print*, "____________________________________"
+     print*, "nx", nx
+     print*, "ix", ix^L
+
      ! Read eqpar
      read(unitini,iostat=ios)(eqpar(ieqpar),ieqpar=1,neqparin),&
           (eqparextra,ieqpar=neqparin+1,neqparini)
@@ -783,7 +791,7 @@ subroutine readfileini_gdf(w)
   use hdf5, only: h5open_f, h5gopen_f, h5fopen_f, h5fclose_f, h5close_f, HID_T, H5F_ACC_RDONLY_F
   use sacgdf, only: sacgdf_read_file, build_x_array, sacgdf_read_datasets
   use gdf_datasets, only: read_real_dataset
-  use common_variables, only: ixGlo^D, ixGhi^D, nw, filenameini, nx, x, t, gencoord, fileheadini
+  use common_variables, only: ixGlo^D, ixGhi^D, nw, filenameini, nx, x, t, gencoord, fileheadini, rhob_
 
   implicit none
 
@@ -847,6 +855,11 @@ subroutine readfileini_gdf(w)
   call h5gopen_f(grid_g_id, "grid_0000000000", grid_z_id, error) !Create the top grid
   
   call sacgdf_read_datasets(grid_z_id, plist_id, w, ix^L)
+
+  print*, "Do some value tests"
+  print*, ix^L
+  print*, shape(w)
+  print*, "density_bg", sum(w(ix^S, rhob_))
 
   ! Close the file and interface
   call h5fclose_f(file_id, error)

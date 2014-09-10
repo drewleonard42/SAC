@@ -1,20 +1,19 @@
 &testlist 
-    teststr='readfileini readparameters'
+    teststr='readfileini'
 /
 
 &filelist
-	filenameini='/archive/mhdmodes_2D_ini.gdf'
+	filenameini='/archive/mhdmodes_2D.out'
 
-	typefileini='gdf'
+	typefileini='binary'
 	filename=   '/archive/mhdmodes_2D.log',
-     		    '/archive/mhdmodes_2D'
-	typefileout='gdf'
+     		    '/archive/mhdmodes_2D.out'
+	typefileout='binary'
         fullgridout= F
         fullgridini= F
  /
 
 &savelist
-    dtsave=1,0.1
     itsave(1,2)=0
 
  /
