@@ -29,7 +29,7 @@ GDFDIR=./fgdfio/lib
 
 LIBS = vacdef$F sacgdf$F
 INCLUDES = vacdef$F vacpar$F vacusrpar$F sacgdf$F
-GDF_INCLUDES = $(GDFDIR)/gdf_types.F90 $(GDFDIR)/helpers_hdf5.F90 $(GDFDIR)/grid_data_format.F90 $(GDFDIR)/data_writers_beta.F90
+GDF_INCLUDES = $(GDFDIR)/gdf_types.F90 $(GDFDIR)/helpers_hdf5.F90 $(GDFDIR)/grid_data_format.F90 $(GDFDIR)/gdf_datasets.F90
 
 VAC_FOR = vac$F vacio$F vacgrid$F vacphys0$F vacphys$F vacusr$F
 VAC_OBJ = vac$O vacio$O vacgrid$O vacphys0$O vacphys$O vacusr$O

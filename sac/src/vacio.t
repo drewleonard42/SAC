@@ -790,7 +790,6 @@ subroutine readfileini_gdf(w)
   use gdf, only: gdf_parameters_T, gdf_root_datasets_T, gdf_field_type_T
   use hdf5, only: h5open_f, h5gopen_f, h5fopen_f, h5fclose_f, h5close_f, HID_T, H5F_ACC_RDONLY_F
   use sacgdf, only: sacgdf_read_file, build_x_array, sacgdf_read_datasets
-  use gdf_datasets, only: read_real_dataset
   use common_variables, only: ixGlo^D, ixGhi^D, nw, filenameini, nx, x, t, gencoord, fileheadini, rhob_
 
   implicit none
@@ -1386,6 +1385,15 @@ end subroutine flushunit
 ! end module vacio
 !##############################################################################
 
+!================================================================================
+!! The Following routines belong in the sacgdf.t file, however due to an apparent
+!! bug in the gfortran 4.9.1 compiler they have to remain here.
+!! Future compiler updates should be tested to check for correct behaviour when 
+!! compiling and running with these routines in the scgdf.t file.
+!================================================================================
+
+!================================================================================
+
   subroutine sacgdf_write_datasets(place, plist_id, w, ix^L)
     use hdf5, only: HID_T
     use gdf_datasets
@@ -1583,5 +1591,7 @@ end subroutine flushunit
   end subroutine sacgdf_write_datasets_3D
 }
 
+!================================================================================
+!================================================================================
 
 

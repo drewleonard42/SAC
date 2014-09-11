@@ -1,0 +1,114 @@
+VAC 4.52 configured to
+  -d=22 -phi=0 -z=0 -g=104,104 -p=mhd -u=default
+  -on=cd,rk
+  -off=mc,fct,tvdlf,tvd,impl,poisson,ct,gencoord,resist,mpi
+ ReadParameters
+&TESTLIST
+ TESTSTR=readfileini readparameters                                                                                                                                                                                                                                                                                                                                                                                      
+ IXTEST1=          3,
+ IXTEST2=          3,
+ IXTEST3=          3,
+ IWTEST=          1,
+ IDIMTEST=          1,
+ /
+ /archive/mhdmodes_2D_ini.gdf                                                                                                                                                                                                                                                                                                                                                                                    
+ /archive/mhdmodes_2D.log                                                                                                                                                                                                                                                                                                                                                                                        
+ /archive/mhdmodes_2D                                                                                                                                                                                                                                                                                                                                                                                            
+ Type of ini/out and log files:gdf       gdf       default   
+ Fullgridini,out: F F
+ /archive/mhdmodes_2D_ini.gdf
+ Do some value tests
+           3           3          98          98
+         104         104          10
+ density_bg   9216.0000000000000     
+ out readini
+ back in readparams
+ DTSAVE  for file 1 =1.0000    
+ DTSAVE  for file 2 =.10000    
+ TMAX=   0.20000000000000001     
+ ITMAX=       10000
+ TYPEB( 1)       = fixed     fixed     fixed     fixed     fixed     fixed     fixed     fixed     fixed     fixed     
+ TYPEB( 2)       = fixed     fixed     fixed     fixed     fixed     fixed     fixed     fixed     fixed     fixed     
+ TYPEB( 3)       = fixed     fixed     fixed     fixed     fixed     fixed     fixed     fixed     fixed     fixed     
+ TYPEB( 4)       = fixed     fixed     fixed     fixed     fixed     fixed     fixed     fixed     fixed     fixed     
+  EXTRAB =  F
+&METHODLIST
+ WNAMES=h 	m1  	 m2	e	b1	b2	eb	rhob	bg1	bg2                                                                                                                                                                                                                                                                                                                                                                             
+ FILEHEADOUT=gdf                                                                                                                                                                                                                                                                                                                                                                                                             
+ EQPAR= 6*0.0000000000000000       ,
+ TYPEADVANCE=onestep   
+ TYPEFULL= 6*cd4        4*nul       
+ TYPEPRED= 10*default   
+ TYPEIMPL= 10*nul       
+ TYPEFILTER= 10*nul       
+ TYPELIMITER= 10*minmod    
+ TYPEENTROPY= 10*nul       
+ ENTROPYCOEF= 4*0.20000000298023224      , 2*-1.0000000000000000      , 2*0.40000000596046448      , 2*-1.0000000000000000      ,
+ ARTCOMP= 10*F,
+ TYPELIMITED=previous  
+ TYPEFCT=etbfct    
+ TYPETVD=roe       
+ TYPEAXIAL=slab      
+ TYPEPOISSON=default   
+ TYPECONSTRAIN=nul       
+ CONSTRAINCOEF=  1.0000000000000000     ,
+ USEPRIMITIVE=F,
+ MUSCLETA=  0.0000000000000000     ,
+ MUSCLOMEGA=  0.0000000000000000     ,
+ ACMWIDTH=          1,
+ ACMNOLIM=F,
+ ACMCOEF= 10*-1.0000000000000000      ,
+ ACMEXPO=  0.0000000000000000     ,
+ FOURTHORDER=F,
+ IMPLMRPC=F,
+ DIMSPLIT=F,
+ TYPEDIMSPLIT=unsplit   
+ SOURCESPLIT=F,
+ TYPESOURCESPLIT=unsplit   
+ SOURCEUNSPLIT=T,
+ DIVBFIX=F,
+ DIVBWAVE=T,
+ DIVBCONSTRAIN=F,
+ ANGMOMFIX=F,
+ COMPACTRES=F,
+ SMALLFIX=F,
+ SMALLP=  10.000000000000000     ,
+ SMALLPCOEFF=  9.9999999999999995E-007,
+ SMALLRHO= -1.0000000000000000     ,
+ SMALLRHOCOEFF=  9.9999999999999995E-007,
+ VACUUMRHO= -1.0000000000000000     ,
+ NPROC= 4*0          ,
+ PROCPAR= 3*-1.0000000000000000      ,
+ /
+&PARAMLIST
+ COURANTPAR= 0.20000000000000001     ,
+ DTPAR= -1.0000000000000000     ,
+ DTDIFFPAR= 0.50000000000000000     ,
+ DTCANTGROW=F,
+ SLOWSTEPS=          0,
+ IMPLMRPCPAR=          4,
+ IMPLPAR= -1.0000000000000000     ,
+ IMPLDIFFPAR=  9.9999999999999998E-013,
+ IMPLERROR=  0.0000000000000000     ,
+ IMPLRELAX=-0.50000000000000000     ,
+ IMPLDWLIMIT=  9.9999999999999997E+098,
+ IMPLRESTART=         20,
+ IMPLRESTART2=          5,
+ IMPLITER=        100,
+ IMPLITERNR=         20,
+ TYPEIMPLINIT=unused    
+ TYPEIMPLITER=vac_bicg  
+ TYPEIMPLMAT=unused    
+ IMPLNEWTON=F,
+ IMPLCONSERV=F,
+ IMPLCENTERED=F,
+ IMPLNEWMAT=F,
+ IMPLPRED=F,
+ IMPL3LEVEL=F,
+ IMPLJACFAST=F,
+ IMPLSOURCE=T,
+ /
+ Warning: incomplete input headline. Added to output headline _mhd22     
+ end readparameters
+Start Advance       0.006 sec
+ Correct Getcsound2 for NONIDEAL gas in vacphys.t.mhd
