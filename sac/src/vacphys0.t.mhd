@@ -152,7 +152,7 @@ SUBROUTINE getcsound2(w,ix^L,csound2)
   !-----------------------------------------------------------------------------
 
   IF(eqpar(gamma_)<=zero)&
-       CALL die('Correct Getcsound2 for NONIDEAL gas in vacphys.t.mhd')
+       CALL die('FATAL: Incorrect Getcsound2 for NONIDEAL gas in vacphys.t.mhd')
 
   oktest=INDEX(teststr,'getcsound2')>=1
   IF(oktest) WRITE(*,*)'Getcsound2'

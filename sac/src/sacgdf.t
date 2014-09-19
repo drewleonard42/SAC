@@ -3,6 +3,7 @@ module sacgdf
 
 contains
   
+
   subroutine sacgdf_write_file(file_id, gdf_rd, gdf_sp, field_types)
     use hdf5, only: HID_T
     use gdf, only: gdf_write_file, gdf_root_datasets_T, gdf_parameters_T, gdf_field_type_T
@@ -39,9 +40,6 @@ contains
     call sacgdf_read_eqpar(file_id)
     
   end subroutine sacgdf_read_file
-
-
-
 
 
   subroutine sacgdf_write_eqpar(file_id)
@@ -264,32 +262,35 @@ contains
     
 
     call h5gopen_f(file_id, 'simulation_parameters', g_id, error)
-    r_ptr => eqpar(gamma_:gamma_)
+    allocate(r_ptr(1))
+
     call read_attribute(g_id, 'gamma', r_ptr)
+    eqpar(gamma_:gamma_) = r_ptr
 
-    r_ptr => eqpar(eta_:eta_)
     call read_attribute(g_id, 'eta', r_ptr)
+    eqpar(eta_:eta_) = r_ptr
 
-    r_ptr => eqpar(grav0_:grav0_)
     call read_attribute(g_id, 'gravity0', r_ptr)
+    eqpar(grav0_:grav0_) = r_ptr 
 
-    r_ptr => eqpar(grav1_:grav1_)
     call read_attribute(g_id, 'gravity1', r_ptr)
+    eqpar(grav1_:grav1_) = r_ptr
 
     ! Read the extra parameters only if we are 2D or 3D
     {^IFTWOD
-    r_ptr => eqpar(grav2_:grav2_)
     call read_attribute(g_id, 'gravity2', r_ptr)
+    eqpar(grav2_:grav2_) = r_ptr
     }
     {^IFTHREED
-    r_ptr => eqpar(grav2_:grav2_)
     call read_attribute(g_id, 'gravity2', r_ptr)
-    r_ptr => eqpar(grav3_:grav3_)
+    eqpar(grav2_:grav2_) = r_ptr
+
     call read_attribute(g_id, 'gravity3', r_ptr)
+    eqpar(grav3_:grav3_) = r_ptr
     }
 
-    r_ptr => eqpar(nu_:nu_)
     call read_attribute(g_id, 'nu', r_ptr)
+    eqpar(nu_:nu_) = r_ptr
 
     i4_ptr => it_arr
     call read_attribute(g_id, 'current_iteration', i4_ptr)
@@ -331,6 +332,7 @@ contains
     use hdf5, only: HID_T
     use gdf_datasets
     use common_variables, only: ixGhi^D, ixGlo^D, nw
+    use phys_constants, only: mu0
 
     implicit none
 
@@ -348,9 +350,10 @@ contains
 
   subroutine sacgdf_read_datasets_1D(place, plist_id, w, ix^L)
     use hdf5, only: HID_T
-    use gdf_datasets, only: read_real8_dataset
+    use gdf_datasets, only: read_dataset
     use common_variables, only: rho_, rhob_, e_, eb_, m1_, b1_, bg1_
     use common_variables, only: ixGhi^D, ixGlo^D, nw, nx
+    use phys_constants, only: mu0
 
     implicit none
 
@@ -362,38 +365,38 @@ contains
     real(kind=8), dimension(:, :, :), allocatable :: wdata3D
 
     ! Density pert
-    call read_real8_dataset(place, 'density_pert', wdata3D)
+    call read_dataset(place, 'density_pert', wdata3D)
     w(ix^S, rho_) = reshape(wdata3D, nx)
     deallocate(wdata3D)
 
     ! Denisty bg
-    call read_real8_dataset(place, 'density_bg', wdata3D)
+    call read_dataset(place, 'density_bg', wdata3D)
     w(ix^S, rhob_) = reshape(wdata3D, nx)
     deallocate(wdata3D)
 
     ! Velocity
-    call read_real8_dataset(place, 'velocity_x', wdata3D)
+    call read_dataset(place, 'velocity_x', wdata3D)
     w(ix^S, m1_) = reshape(wdata3D, nx) * (w(ix^S, rho_) + w(ix^S, rhob_))
     deallocate(wdata3D)
 
     ! internal energy pert
-    call read_real8_dataset(place, 'internal_energy_pert', wdata3D)
+    call read_dataset(place, 'internal_energy_pert', wdata3D)
     w(ix^S, e_) = reshape(wdata3D, nx)
     deallocate(wdata3D)
 
     ! internal energy bg
-    call read_real8_dataset(place, 'internal_energy_bg', wdata3D)
+    call read_dataset(place, 'internal_energy_bg', wdata3D)
     w(ix^S, eb_) = reshape(wdata3D, nx)
     deallocate(wdata3D)
 
     ! Mag field pert
-    call read_real8_dataset(place, 'mag_field_x_pert', wdata3D)
-    w(ix^S, b1_) = reshape(wdata3D, nx)
+    call read_dataset(place, 'mag_field_x_pert', wdata3D)
+    w(ix^S, b1_) = reshape(wdata3D, nx)/sqrt(mu0)
     deallocate(wdata3D)
 
     ! Mag field bg
-    call read_real8_dataset(place, 'mag_field_x_bg', wdata3D)
-    w(ix^S, bg1_) = reshape(wdata3D, nx)
+    call read_dataset(place, 'mag_field_x_bg', wdata3D)
+    w(ix^S, bg1_) = reshape(wdata3D, nx)/sqrt(mu0)
     deallocate(wdata3D)
     
   end subroutine sacgdf_read_datasets_1D
@@ -401,9 +404,10 @@ contains
 {^IFTWOD
   subroutine sacgdf_read_datasets_2D(place, plist_id, w, ix^L)
     use hdf5, only: HID_T
-    use gdf_datasets, only: read_real8_dataset
+    use gdf_datasets, only: read_dataset
     use common_variables, only: rho_, rhob_, m2_, b2_, bg2_
     use common_variables, only: ixGhi^D, ixGlo^D, nw, nx
+    use phys_constants, only: mu0
 
     implicit none
 
@@ -415,18 +419,18 @@ contains
     real(kind=8), dimension(:, :, :), allocatable :: wdata3D
 
     ! Velocity
-    call read_real8_dataset(place, 'velocity_y', wdata3D)
+    call read_dataset(place, 'velocity_y', wdata3D)
     w(ix^S, m2_) = reshape(wdata3D, nx) * (w(ix^S, rho_) + w(ix^S, rhob_))
     deallocate(wdata3D)
 
      ! Mag field pert
-    call read_real8_dataset(place, 'mag_field_y_pert', wdata3D)
-    w(ix^S, b2_) = reshape(wdata3D, nx)
+    call read_dataset(place, 'mag_field_y_pert', wdata3D)
+    w(ix^S, b2_) = reshape(wdata3D, nx)/sqrt(mu0)
     deallocate(wdata3D)
 
     ! Mag field bg
-    call read_real8_dataset(place, 'mag_field_y_bg', wdata3D)
-    w(ix^S, bg2_) = reshape(wdata3D, nx)
+    call read_dataset(place, 'mag_field_y_bg', wdata3D)
+    w(ix^S, bg2_) = reshape(wdata3D, nx)/sqrt(mu0)
     deallocate(wdata3D)
     
   end subroutine sacgdf_read_datasets_2D
@@ -434,9 +438,10 @@ contains
 {^IFTHREED
   subroutine sacgdf_read_datasets_3D(place, plist_id, w, ix^L)
     use hdf5, only: HID_T
-    use gdf_datasets, only: read_real8_dataset
+    use gdf_datasets, only: read_dataset
     use common_variables, only: rho_, rhob_, m3_, b3_, bg3_
     use common_variables, only: ixGhi^D, ixGlo^D, nw, nx
+    use phys_constants, only: mu0
 
     implicit none
 
@@ -448,33 +453,33 @@ contains
     real(kind=8), dimension(:, :, :), allocatable :: wdata3D
 
     ! Velocity
-    call read_real8_dataset(place, 'velocity_y', wdata3D)
+    call read_dataset(place, 'velocity_y', wdata3D)
     w(ix^S, m2_) = reshape(wdata3D, nx) * (w(ix^S, rho_) + w(ix^S, rhob_))
     deallocate(wdata3D)
 
      ! Mag field pert
-    call read_real8_dataset(place, 'mag_field_y_pert', wdata3D)
+    call read_dataset(place, 'mag_field_y_pert', wdata3D)
     w(ix^S, b2_) = reshape(wdata3D, nx)
     deallocate(wdata3D)
 
     ! Mag field bg
-    call read_real8_dataset(place, 'mag_field_y_bg', wdata3D)
+    call read_dataset(place, 'mag_field_y_bg', wdata3D)
     w(ix^S, bg2_) = reshape(wdata3D, nx)
     deallocate(wdata3D)
 
     ! Velocity
-    call read_real8_dataset(place, 'velocity_z', wdata3D)
+    call read_dataset(place, 'velocity_z', wdata3D)
     w(ix^S, m3_) = reshape(wdata3D, nx) * (w(ix^S, rho_) + w(ix^S, rhob_))
     deallocate(wdata3D)
 
      ! Mag field pert
-    call read_real8_dataset(place, 'mag_field_z_pert', wdata3D)
-    w(ix^S, b3_) = reshape(wdata3D, nx)
+    call read_dataset(place, 'mag_field_z_pert', wdata3D)
+    w(ix^S, b3_) = reshape(wdata3D, nx)/sqrt(mu0)
     deallocate(wdata3D)
 
     ! Mag field bg
-    call read_real8_dataset(place, 'mag_field_z_bg', wdata3D)
-    w(ix^S, bg3_) = reshape(wdata3D, nx)
+    call read_dataset(place, 'mag_field_z_bg', wdata3D)
+    w(ix^S, bg3_) = reshape(wdata3D, nx)/sqrt(mu0)
     deallocate(wdata3D)
     
   end subroutine sacgdf_read_datasets_3D

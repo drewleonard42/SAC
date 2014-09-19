@@ -3,13 +3,13 @@
 /
 
 &filelist
-	filenameini='/archive/io_testing/mhdmodes_2D.ini'
+	filenameini='/archive/gdf_testing/mhdmodes_2D.ini'
 
 	typefileini='binary'
-	filename=   '/archive/mhdmodes_2D.log',
-     		    '/archive/mhdmodes_2D'
+	filename=   '/archive/gdf_testing/mhdmodes_2D.log',
+     		    '/archive/gdf_testing/mhdmodes_2D_'
 	typefileout='gdf'
-        fullgridout= F
+        fullgridout= T
         fullgridini= T
  /
 
@@ -26,9 +26,9 @@
 
  &methodlist
 
-	wnames=		'h 	m1  	 m2	e	b1	b2	eb	rhob	bg1	bg2'
+	wnames=		'h m1 m2 e b1 b2 eb rhob bg1 bg2'
 	typefull=	6*'cd4',4*'nul'
-        typeadvance=    'onestep'
+    typeadvance= 'onestep'
 	typefilter=	10*'nul'
 	dimsplit=	F
 	sourcesplit=	F

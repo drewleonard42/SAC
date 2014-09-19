@@ -790,12 +790,13 @@ subroutine readfileini_gdf(w)
   use gdf, only: gdf_parameters_T, gdf_root_datasets_T, gdf_field_type_T
   use hdf5, only: h5open_f, h5gopen_f, h5fopen_f, h5fclose_f, h5close_f, HID_T, H5F_ACC_RDONLY_F
   use sacgdf, only: sacgdf_read_file, build_x_array, sacgdf_read_datasets
-  use common_variables, only: ixGlo^D, ixGhi^D, nw, filenameini, nx, x, t, gencoord, fileheadini, rhob_
+  use common_variables, only: ixGlo^D, ixGhi^D, nw, filenameini, nx, x, t, gencoord, fileheadini, rhob_, unitterm, teststr
 
   implicit none
 
   real(kind=8), intent(inout) :: w(ixG^T,nw)
   
+  logical :: oktest
   integer(kind=4) :: error
   integer(HID_T) :: file_id, grid_g_id, grid_z_id, plist_id
   type(gdf_parameters_T) :: gdf_sp
@@ -804,10 +805,12 @@ subroutine readfileini_gdf(w)
   character(len=60) :: software_name, software_version
   !class(*), dimension(:, :, :), pointer :: r_ptr
   real(kind=8), dimension(:, :, :), allocatable, target :: wdata3D
+  integer(kind=4), dimension(^ND) :: disk_nx
 
   integer:: ndimini,neqparini,neqparin,nwini,nwin ! values describing input data
   integer:: ix^L
   
+  oktest=index(teststr,'readfileini')>=1
 
   ! just in case you are reading in a gdf and saving out a binary
   fileheadini = 'gdf'
@@ -816,7 +819,7 @@ subroutine readfileini_gdf(w)
   call h5open_f(error)
   
   ! Open a file for reading only
-  print*, trim(filenameini)
+  if(oktest) write(unitterm,*) "Reading GDF file: ", trim(filenameini)
   call h5fopen_f(trim(filenameini), H5F_ACC_RDONLY_F, file_id, error)
 
   ! init the objects
@@ -840,13 +843,14 @@ subroutine readfileini_gdf(w)
   call checkNdimNeqparNw(ndimini,neqparini,nwini,neqparin,nwin)
 
   nx = gdf_sp%domain_dimensions(:ndimini)
+  disk_nx = gdf_sp%domain_dimensions(:ndimini)
 
   ! This set's up the global indicies based on nx and also
   ! deals with the MPI indicies etc.
   call setixGixMix(ix^L)
 
   ! Build the x array
-  call build_x_array(ix^L, nx, gdf_sp%domain_left_edge(:ndimini), gdf_sp%domain_right_edge(:ndimini), x)
+  call build_x_array(ix^L, disk_nx, gdf_sp%domain_left_edge(:ndimini), gdf_sp%domain_right_edge(:ndimini), x)
   
   ! Reconstruct the w array
   ! Create field groups
@@ -1238,11 +1242,16 @@ subroutine savefileout_gdf(w,ix^L)
   class(*), dimension(:, :, :), pointer :: d_ptr
   real(kind=8), dimension(ix^S) :: wdata
   real(kind=8), dimension(:, :, :), allocatable, target :: wdata3D
+  real(kind=8), dimension(ixmax1, ixmax2, 2) :: temp_x
 
   gdf_nx = (/ 1, 1, 1 /)
-  gdf_nx(:^ND) = nx
+  gdf_nx(:^ND) = (/ ixmax^D-ixmin^D+1 /)
+  print*, "savefile_gdf"
   print*, gdf_nx
+  print*, ix^L
+
   allocate(wdata3D(1:gdf_nx(1), 1:gdf_nx(2), 1:gdf_nx(3)))
+  print*, shape(wdata3D)
 
   ! Open file
   call h5open_f(error)
@@ -1262,14 +1271,14 @@ subroutine savefileout_gdf(w,ix^L)
   gdf_sp%dimensionality = ^ND
   gdf_sp%domain_dimensions = gdf_nx ! on disk
   gdf_sp%domain_left_edge = (/ 0, 0, 0 /)
-  gdf_sp%domain_right_edge = (/ 0, 0, 0 /)
+  gdf_sp%domain_right_edge = (/ 1, 1, 1 /)
   gdf_sp%domain_left_edge(:^ND) = x(ixmin^D, :) !bottom left corner
   gdf_sp%domain_right_edge(:^ND) = x(ixmax^D, :) ! top right corner
   gdf_sp%field_ordering = 1
   gdf_sp%num_ghost_zones = 0 !on disk
   gdf_sp%refine_by = 0
   gdf_sp%unique_identifier = "sacgdf2014"
-  
+
   ! Initilize the data
   call rd%init(1)
   
@@ -1418,6 +1427,7 @@ end subroutine flushunit
     use gdf_datasets, only: write_dataset
     use common_variables, only: rho_, rhob_, e_, eb_, m1_, b1_, bg1_
     use common_variables, only: ixGhi^D, ixGlo^D, nw, nx
+    use phys_constants, only: mu0
     
     implicit none
 
@@ -1433,7 +1443,7 @@ end subroutine flushunit
     real(kind=8), dimension(:, :, :), allocatable, target :: wdata3D
     
     gdf_nx = (/ 1, 1, 1 /)
-    gdf_nx(:^ND) = nx
+    gdf_nx(:^ND) = (/ ixmax^D-ixmin^D+1 /)
     allocate(wdata3D(1:gdf_nx(1), 1:gdf_nx(2), 1:gdf_nx(3)))
 
     ! Velocity
@@ -1455,13 +1465,13 @@ end subroutine flushunit
     call write_dataset(place, 'density_bg', d_ptr, plist_id)
 
     ! Mag field pert
-    wdata(ix^S) = w(ix^S, b1_)
+    wdata(ix^S) = w(ix^S, b1_)*sqrt(mu0)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
     call write_dataset(place, 'mag_field_x_pert', d_ptr, plist_id)
 
     ! Mag field bg
-    wdata(ix^S) = w(ix^S, bg1_)
+    wdata(ix^S) = w(ix^S, bg1_)*sqrt(mu0)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
     call write_dataset(place, 'mag_field_x_bg', d_ptr, plist_id)
@@ -1488,6 +1498,7 @@ end subroutine flushunit
     use gdf_datasets, only: write_dataset
     use common_variables, only: rho_, rhob_, m2_, b2_, bg2_
     use common_variables, only: ixGhi^D, ixGlo^D, nw, nx
+    use phys_constants, only: mu0
     
     implicit none
 
@@ -1501,9 +1512,9 @@ end subroutine flushunit
     class(*), dimension(:, :, :), pointer :: d_ptr
     real(kind=8), dimension(ix^S), target :: wdata
     real(kind=8), dimension(:, :, :), allocatable, target :: wdata3D
-    
+
     gdf_nx = (/ 1, 1, 1 /)
-    gdf_nx(:^ND) = nx
+    gdf_nx(:^ND) = (/ ixmax^D-ixmin^D+1 /)
     allocate(wdata3D(1:gdf_nx(1), 1:gdf_nx(2), 1:gdf_nx(3)))
 
     ! Velocity
@@ -1513,13 +1524,13 @@ end subroutine flushunit
     call write_dataset(place, 'velocity_y', d_ptr, plist_id)
 
     ! Mag field pert
-    wdata(ix^S) = w(ix^S, b2_)
+    wdata(ix^S) = w(ix^S, b2_)*sqrt(mu0)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
     call write_dataset(place, 'mag_field_y_pert', d_ptr, plist_id)
 
     ! Mag field bg
-    wdata(ix^S) = w(ix^S, bg2_)
+    wdata(ix^S) = w(ix^S, bg2_)*sqrt(mu0)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
     call write_dataset(place, 'mag_field_y_bg', d_ptr, plist_id)
@@ -1533,7 +1544,8 @@ end subroutine flushunit
     use gdf_datasets, only: write_dataset
     use common_variables, only: rho_, rhob_, m3_, b3_, bg3_
     use common_variables, only: ixGhi^D, ixGlo^D, nw, nx
-    
+    use phys_constants, only: mu0
+
     implicit none
 
     integer(HID_T), intent(inout) :: place
@@ -1548,7 +1560,7 @@ end subroutine flushunit
     real(kind=8), dimension(:, :, :), allocatable, target :: wdata3D
 
     gdf_nx = (/ 1, 1, 1 /)
-    gdf_nx(:^ND) = nx
+    gdf_nx(:^ND) = (/ ixmax^D-ixmin^D+1 /)
     allocate(wdata3D(1:gdf_nx(1), 1:gdf_nx(2), 1:gdf_nx(3)))
 
     ! Velocity
@@ -1558,13 +1570,13 @@ end subroutine flushunit
     call write_dataset(place, 'velocity_y', d_ptr, plist_id)
 
     ! Mag field pert
-    wdata(ix^S) = w(ix^S, b2_)
+    wdata(ix^S) = w(ix^S, b2_)*sqrt(mu0)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
     call write_dataset(place, 'mag_field_y_pert', d_ptr, plist_id)
 
     ! Mag field bg
-    wdata(ix^S) = w(ix^S, bg2_)
+    wdata(ix^S) = w(ix^S, bg2_)*sqrt(mu0)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
     call write_dataset(place, 'mag_field_y_bg', d_ptr, plist_id)
@@ -1576,13 +1588,13 @@ end subroutine flushunit
     call write_dataset(place, 'velocity_z', d_ptr, plist_id)
 
     ! Mag field pert
-    wdata(ix^S) = w(ix^S, b3_)
+    wdata(ix^S) = w(ix^S, b3_)*sqrt(mu0)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
     call write_dataset(place, 'mag_field_z_pert', d_ptr, plist_id)
 
     ! Mag field bg
-    wdata(ix^S) = w(ix^S, bg3_)
+    wdata(ix^S) = w(ix^S, bg3_)*sqrt(mu0)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
     call write_dataset(place, 'mag_field_z_bg', d_ptr, plist_id)

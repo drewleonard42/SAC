@@ -4,6 +4,7 @@ MODULE phys_constants
   
   INTEGER, PARAMETER :: biginteger=10000000
   REAL(kind=8), PARAMETER :: pi= 3.1415926535897932384626433832795
+  real(kind=8), parameter :: mu0=4.d-7*pi
   REAL(kind=8), PARAMETER :: smalldouble=1.d-99, bigdouble=1.d+99
   REAL(kind=8), PARAMETER :: zero=0d0, one=1d0, two=2d0, half=0.5d0, quarter=0.25d0
   
@@ -23,7 +24,7 @@ MODULE code_constants
   INTEGER, PARAMETER :: ixGlo^D=1
 
   ! The next line is edited by SETVAC
-  INTEGER, PARAMETER :: ixGhi1=104,ixGhi2=104,ixGhimin=104,ixGhimax=104
+  INTEGER, PARAMETER :: ixGhi1=100,ixGhi2=100,ixGhimin=100,ixGhimax=100
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   INTEGER, PARAMETER :: ndim=^ND, ndir=^NC
