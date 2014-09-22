@@ -7,10 +7,10 @@
 
 	typefileini='gdf'
 	filename=   '/archive/gdf_testing/mhdmodes_2D.log',
-     		    '/archive/gdf_testing/mhdmodes_2D_gdfini_'
+     		    '/archive/gdf_testing/mhdmodes_2D_ii_'
 	typefileout='gdf'
-        fullgridout= T
-        fullgridini= T
+        fullgridout= F
+        fullgridini= F
  /
 
 &savelist

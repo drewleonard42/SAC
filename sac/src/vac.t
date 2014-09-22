@@ -58,6 +58,10 @@ PROGRAM vac
 
   CALL getboundary(t,1,nw,1,ndim,w)
   DO
+     DO ifile=1,nfile
+        IF(timetosave(ifile)) CALL savefile(ifile,w)
+     END DO
+
      ! Determine time step
      IF(dtpar>zero)THEN
         dt=dtpar
@@ -682,6 +686,7 @@ SUBROUTINE getdt_courant(w,ix^L)
      ELSE
         ! dx>0, but cmax>=0 may actually be 0, thus we calculate 
         ! max(cmax/dx) rather than min(dx/cmax).
+
         CALL getcmax(new_cmax,w,ix^L,idim,cmax)
         courantmax=MAX(courantmax,MAXVAL(cmax(ix^S)/dx(ix^S,idim)))
 

@@ -292,9 +292,9 @@ contains
     call read_attribute(g_id, 'nu', r_ptr)
     eqpar(nu_:nu_) = r_ptr
 
-    i4_ptr => it_arr
+    allocate(i4_ptr(1))
     call read_attribute(g_id, 'current_iteration', i4_ptr)
-    it = it_arr(1)
+    it = i4_ptr(1)
 
     call h5gclose_f(g_id, error)
 
@@ -459,12 +459,12 @@ contains
 
      ! Mag field pert
     call read_dataset(place, 'mag_field_y_pert', wdata3D)
-    w(ix^S, b2_) = reshape(wdata3D, nx)
+    w(ix^S, b2_) = reshape(wdata3D, nx)/sqrt(mu0)
     deallocate(wdata3D)
 
     ! Mag field bg
     call read_dataset(place, 'mag_field_y_bg', wdata3D)
-    w(ix^S, bg2_) = reshape(wdata3D, nx)
+    w(ix^S, bg2_) = reshape(wdata3D, nx)/sqrt(mu0)
     deallocate(wdata3D)
 
     ! Velocity

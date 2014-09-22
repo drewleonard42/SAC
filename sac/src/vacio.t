@@ -790,7 +790,7 @@ subroutine readfileini_gdf(w)
   use gdf, only: gdf_parameters_T, gdf_root_datasets_T, gdf_field_type_T
   use hdf5, only: h5open_f, h5gopen_f, h5fopen_f, h5fclose_f, h5close_f, HID_T, H5F_ACC_RDONLY_F
   use sacgdf, only: sacgdf_read_file, build_x_array, sacgdf_read_datasets
-  use common_variables, only: ixGlo^D, ixGhi^D, nw, filenameini, nx, x, t, gencoord, fileheadini, rhob_, unitterm, teststr
+  use common_variables, only: ixGlo^D, ixGhi^D, nw, filenameini, nx, x, t, gencoord, fileheadini, unitterm, teststr
 
   implicit none
 
@@ -844,6 +844,7 @@ subroutine readfileini_gdf(w)
 
   nx = gdf_sp%domain_dimensions(:ndimini)
   disk_nx = gdf_sp%domain_dimensions(:ndimini)
+  t = gdf_sp%current_time(1)
 
   ! This set's up the global indicies based on nx and also
   ! deals with the MPI indicies etc.
@@ -858,11 +859,6 @@ subroutine readfileini_gdf(w)
   call h5gopen_f(grid_g_id, "grid_0000000000", grid_z_id, error) !Create the top grid
   
   call sacgdf_read_datasets(grid_z_id, plist_id, w, ix^L)
-
-  print*, "Do some value tests"
-  print*, ix^L
-  print*, shape(w)
-  print*, "density_bg", sum(w(ix^S, rhob_))
 
   ! Close the file and interface
   call h5fclose_f(file_id, error)
@@ -1028,7 +1024,7 @@ subroutine savefile(ifile,w)
   real(kind=8):: w(ixG^T,nw)
   character(10):: itstring
   !-----------------------------------------------------------------------------
-
+  print*, "in savefile"
   !if(nproc(ifile+2)>0) call process(ifile+2,1,ndim,w)
 
   ! In most cases the mesh should be saved

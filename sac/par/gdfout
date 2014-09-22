@@ -9,7 +9,7 @@
 	filename=   '/archive/gdf_testing/mhdmodes_2D.log',
      		    '/archive/gdf_testing/mhdmodes_2D_'
 	typefileout='gdf'
-        fullgridout= T
+        fullgridout= F
         fullgridini= T
  /
 
