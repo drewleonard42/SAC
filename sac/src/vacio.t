@@ -1223,7 +1223,7 @@ subroutine savefileout_gdf(w,ix^L)
   real(kind=8), intent(IN):: w(ixG^T,nw)
 
   integer(HID_T) :: file_id
-  integer(HID_T) :: plist_id         !< Property list identifier
+  integer(HID_T) :: plist_id, xfer_prp         !< Property list identifier
   integer(HID_T) :: doml_g_id        !< domain list identifier
   integer(HID_T) :: dom_g_id         !< domain group identifier
   integer :: error
@@ -1294,7 +1294,9 @@ subroutine savefileout_gdf(w,ix^L)
   call h5gcreate_f(dom_g_id, "grid_0000000000", doml_g_id, error) !Create the top grid
   
   ! WRITE ACTUAL DATA HERE
-  call sacgdf_write_datasets(doml_g_id, plist_id, w, ix^L)
+
+  call h5pcreate_f(H5P_DATASET_XFER_F, xfer_prp, error)
+  call sacgdf_write_datasets(doml_g_id, xfer_prp, w, ix^L)
   
   call h5fclose_f(file_id, error)
   call h5close_f(error)
