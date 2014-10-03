@@ -1,177 +1,187 @@
 !=============================================================================
-SUBROUTINE mpiinit
+subroutine mpiinit
 
   ! Initialize MPI variables
 
-  USE constants
-  USE common_variables
+  use constants
+  use common_variables
   !----------------------------------------------------------------------------
-  CALL MPI_INIT(ierrmpi)
-  CALL MPI_COMM_RANK (MPI_COMM_WORLD, ipe, ierrmpi)
-  CALL MPI_COMM_SIZE (MPI_COMM_WORLD, npe, ierrmpi)
+  call MPI_INIT(ierrmpi)
+  call MPI_COMM_RANK (MPI_COMM_WORLD, ipe, ierrmpi)
+  call MPI_COMM_SIZE (MPI_COMM_WORLD, npe, ierrmpi)
 
   ! unset values for directional processor numbers
   npe^D=-1;
   ! default value for test processor
   ipetest=0
 
-  RETURN
-END SUBROUTINE mpiinit
+  return
+end subroutine mpiinit
 
 !==============================================================================
-SUBROUTINE mpifinalize
+subroutine mpifinalize
 
-  USE constants
-  USE common_variables
+  use constants
+  use common_variables
 
-  CALL MPI_BARRIER(MPI_COMM_WORLD,ierrmpi)
-  CALL MPI_FINALIZE(ierrmpi)
+  call MPI_BARRIER(MPI_COMM_WORLD,ierrmpi)
+  call MPI_FINALIZE(ierrmpi)
 
-  RETURN
-END SUBROUTINE mpifinalize
+  return
+end subroutine mpifinalize
 
 !==============================================================================
-SUBROUTINE ipe2ipeD(qipe,qipe^D)
+subroutine ipe2ipeD(qipe,qipe^D)
 
   ! Convert serial processor index to directional processor indexes
 
-  USE constants
-  USE common_variables
+  use constants
+  use common_variables
 
-  INTEGER:: qipe^D, qipe
+  integer:: qipe^D, qipe
   !-----------------------------------------------------------------------------
   qipe1 = qipe - npe1*(qipe/npe1)
   {qipe2 = qipe/npe1 - npe2*(qipe/(npe1*npe2)) ^NOONED}
   {qipe3 = qipe/(npe1*npe2)                    ^IFTHREED}
 
-  RETURN
-END SUBROUTINE ipe2ipeD
+  return
+end subroutine ipe2ipeD
 
 !==============================================================================
-SUBROUTINE ipeD2ipe(qipe^D,qipe)
+subroutine ipeD2ipe(qipe^D,qipe)
 
   ! Convert directional processor indexes to serial processor index
 
-  USE constants
-  USE common_variables
+  use constants
+  use common_variables
 
-  INTEGER:: qipe^D, qipe
+  integer:: qipe^D, qipe
   !-----------------------------------------------------------------------------
   qipe = qipe1 {^NOONED + npe1*qipe2} {^IFTHREED + npe1*npe2*qipe3}
 
-  RETURN
-END SUBROUTINE ipeD2ipe
+  return
+end subroutine ipeD2ipe
 
 !==============================================================================
-SUBROUTINE mpisetnpeDipeD(name)
+subroutine mpisetnpeDipeD(name, filetype)
 
   ! Set directional processor numbers and indexes based on a filename.
   ! The filename contains _np followed by np^D written with 2 digit integers.
   ! For example _np0203 means np1=2, np2=3 for 2D.
+  use constants
+  use common_variables
 
-  USE constants
-  USE common_variables
-  CHARACTER(^LENNAME) :: name, nametail
-  INTEGER:: i,qnpe^D
-  LOGICAL:: npeDknown,npeDinname
+  implicit none
+  
+  character(^LENNAME), intent(inout) :: name, filetype
+  character(^LENNAME) :: nametail
+  integer:: i,qnpe^D
+  logical:: npeDknown,npeDinname
   !-----------------------------------------------------------------------------
 
-  oktest = INDEX(teststr,'mpisetnpeDipeD')>0
-  IF(oktest)WRITE(*,*)'mpisetnpeDipeD ipe,name=',ipe,name
+  oktest = index(teststr,'mpisetnpeDipeD')>0
+  if(oktest)write(*,*)'mpisetnpeDipeD ipe,name=',ipe,name
 
   ! Check if npe^D is already known
   npeDknown  = npe1>0
-  IF(npedknown .AND. npe^D* /= npe)THEN
-     WRITE(*,*)'npe=',npe,' /= product of npe^D=',npe^D
-     CALL mpistop('ERROR in setnpeDipeD')
-  ENDIF
+  if(npedknown .and. npe^D* /= npe)then
+     write(*,*)'npe=',npe,' /= product of npe^D=',npe^D
+     call mpistop('ERROR in setnpeDipeD')
+  endif
 
   ! Check if npe^D is given in the name
-  i=INDEX(name,'_np')+3
+  i=index(name,'_np')+3
   npeDinname = i>3
 
-  IF(.NOT.(npeDknown.OR.npeDinname))CALL mpistop( &
+  if(.not.(npeDknown.or.npeDinname))call mpistop( &
        'ERROR in setnpeDipeD: npeD is neither known nor given in name='//name)
 
-  IF(npeDinname)THEN
+  if(npeDinname)then
      ! read npe^D from name
-     READ(name(i:i+5),'(3i2)') qnpe^D
+     read(name(i:i+5),'(3i2)') qnpe^D
      i=i+2*^ND
      nametail=name(i:^LENNAME)
-  ENDIF
+  endif
 
-  IF( npeDknown .AND. npeDinname )THEN
+  if( npeDknown .and. npeDinname )then
      ! Check agreement
-     IF( qnpe^D/=npe^D|.OR. )THEN
-        WRITE(*,*)'npe^D=',npe^D,' /= qnpe^D=',qnpe^D,' read from filename=',name
-        CALL mpistop('ERROR in mpisetnpeDipeD')
-     ENDIF
-  ENDIF
+     if( qnpe^D/=npe^D|.or. )then
+        write(*,*)'npe^D=',npe^D,' /= qnpe^D=',qnpe^D,' read from filename=',name
+        call mpistop('ERROR in mpisetnpeDipeD')
+     endif
+  endif
 
-  IF(npeDinname .AND. .NOT.npeDknown)THEN
+  if(npeDinname .and. .not.npeDknown)then
      ! set npe^D based on name
      npe^D=qnpe^D;
-     IF( npe^D* /= npe)THEN
-        WRITE(*,*)'npe=',npe,' /= product of npe^D=',npe^D,&
+     if( npe^D* /= npe)then
+        write(*,*)'npe=',npe,' /= product of npe^D=',npe^D,&
              ' read from filename=',name
-        CALL mpistop('ERROR in setnpeDipeD')
-     ENDIF
-  ENDIF
+        call mpistop('ERROR in setnpeDipeD')
+     endif
+  endif
 
   ! Get directional processor indexes
-  CALL ipe2ipeD(ipe,ipe^D)
+  call ipe2ipeD(ipe,ipe^D)
 
-  IF(npeDknown .AND. .NOT.npeDinname)THEN
+  if(npeDknown .and. .not.npeDinname)then
      ! insert npe^D into name
-     i=INDEX(name,'.')
+     i=index(name,'.')
      nametail=name(i:^LENNAME)
-     WRITE(name(i:^LENNAME),"('_np',3i2.2)") npe^D
+     write(name(i:^LENNAME),"('_np',3i2.2)") npe^D
      i = i+3+2*^ND
-  ENDIF
+  endif
 
   ! insert ipe number into the filename
-  WRITE(name(i:^LENNAME),"('_',i3.3,a)") ipe,nametail(1:^LENNAME-i-4)
+  print*, filetype
+  if ((filetype .eq. 'outfile') .and. (.not. typefileout .eq. 'gdf')) then
+     write(name(i:^LENNAME),"('_',i3.3,a)") ipe,nametail(1:^LENNAME-i-4)
+  end if
+
+  if ((filetype .eq. 'inifile') .and. (.not. typefileini .eq. 'gdf')) then
+     write(name(i:^LENNAME),"('_',i3.3,a)") ipe,nametail(1:^LENNAME-i-4)
+  end if
 
   ! Set logicals about MPI boundaries for this processor
   {^DLOOP
   mpiupperB(^D)=ipe^D<npe^D-1
   mpilowerB(^D)=ipe^D>0 \}
 
-  IF(oktest)WRITE(*,*)'mpisetnpeDipeD: ipe,npeD,ipeD,name=',ipe,npe^D,ipe^D,name
+  if(oktest)write(*,*)'mpisetnpeDipeD: ipe,npeD,ipeD,name=',ipe,npe^D,ipe^D,name
 
-  RETURN
-END SUBROUTINE mpisetnpeDipeD
+  return
+end subroutine mpisetnpeDipeD
 
 !==============================================================================
-SUBROUTINE mpineighbors(idir,hpe,jpe)
+subroutine mpineighbors(idir,hpe,jpe)
 
   ! Find the hpe and jpe processors on the left and right side of this processor 
   ! in direction idir. The processor cube is taken to be periodic in every
   ! direction.
 
-  USE constants
-  USE common_variables
+  use constants
+  use common_variables
 
-  INTEGER :: idir,hpe,jpe,hpe^D,jpe^D
+  integer :: idir,hpe,jpe,hpe^D,jpe^D
   !-----------------------------------------------------------------------------
   hpe^D=ipe^D-kr(^D,idir);
   jpe^D=ipe^D+kr(^D,idir);
   {^DLOOP
-  IF(hpe^D<0)hpe^D=npe^D-1
-  IF(jpe^D>=npe^D)jpe^D=0\}
+  if(hpe^D<0)hpe^D=npe^D-1
+  if(jpe^D>=npe^D)jpe^D=0\}
 
-  CALL ipeD2ipe(hpe^D,hpe)
-  CALL ipeD2ipe(jpe^D,jpe)
+  call ipeD2ipe(hpe^D,hpe)
+  call ipeD2ipe(jpe^D,jpe)
 
-  RETURN
-END SUBROUTINE mpineighbors
+  return
+end subroutine mpineighbors
 !==============================================================================
-SUBROUTINE mpigridsetup
+subroutine mpigridsetup
 
   ! Distribute a grid of size nxall^D onto PE-s arranged in a cube of size npe^D
 
-  USE constants
-  USE common_variables
+  use constants
+  use common_variables
   !-----------------------------------------------------------------------------
 !!!write(*,*)'nxall,npe=',nxall^D,npe^D
 
@@ -184,62 +194,62 @@ SUBROUTINE mpigridsetup
 
   ! The last processors in a direction may have smaller grid sizes than nxpe
   {^DLOOP 
-  IF(ipe^D < npe^D-1)THEN
+  if(ipe^D < npe^D-1)then
      nx^D = nxpe^D
-  ELSE
+  else
      nx^D = nxall^D - ixpemin^D + 1
-  ENDIF
+  endif
   \}
 
   ! Global grid index of the last grid point stored on this PE
   ixPEmax^D=ixPEmin^D+nx^D-1;
 
-  RETURN
-END SUBROUTINE mpigridsetup
+  return
+end subroutine mpigridsetup
 
 !=============================================================================
-SUBROUTINE mpireduce(a,mpifunc)
+subroutine mpireduce(a,mpifunc)
 
   ! reduce input for one PE 0 using mpifunc
 
-  USE constants
+  use constants
 
-  REAL(kind=8) :: a, alocal
-  INTEGER          :: mpifunc, ierrmpi
+  real(kind=8) :: a, alocal
+  integer          :: mpifunc, ierrmpi
   !----------------------------------------------------------------------------
   alocal = a
-  CALL MPI_REDUCE(alocal,a,1,MPI_DOUBLE_PRECISION,mpifunc,&
+  call MPI_REDUCE(alocal,a,1,MPI_DOUBLE_PRECISION,mpifunc,&
        0,MPI_COMM_WORLD,ierrmpi)
 
-  RETURN
-END SUBROUTINE mpireduce
+  return
+end subroutine mpireduce
 
 !==============================================================================
-SUBROUTINE mpiallreduce(a,mpifunc)
+subroutine mpiallreduce(a,mpifunc)
 
   ! reduce input onto all PE-s using mpifunc
 
-  USE constants
+  use constants
 
-  REAL(kind=8) :: a, alocal
-  INTEGER          :: mpifunc, ierrmpi
+  real(kind=8) :: a, alocal
+  integer          :: mpifunc, ierrmpi
   !-----------------------------------------------------------------------------
   alocal = a
-  CALL MPI_ALLREDUCE(alocal,a,1,MPI_DOUBLE_PRECISION,mpifunc,&
+  call MPI_ALLREDUCE(alocal,a,1,MPI_DOUBLE_PRECISION,mpifunc,&
        MPI_COMM_WORLD,ierrmpi)
 
-  RETURN
-END SUBROUTINE mpiallreduce
+  return
+end subroutine mpiallreduce
 
 !==============================================================================
-SUBROUTINE mpiix(ix^D,jpe)
+subroutine mpiix(ix^D,jpe)
 
   ! Convert ix^D physical cell index on the global grid to local indexes 
   ! and set the processor number jpe to the processor that contains the cell
 
-  USE constants
-  USE common_variables
-  INTEGER :: ix^D, jpe, jpe^D
+  use constants
+  use common_variables
+  integer :: ix^D, jpe, jpe^D
   !-----------------------------------------------------------------------------
 
   ! Directional processor indexes
@@ -249,83 +259,83 @@ SUBROUTINE mpiix(ix^D,jpe)
   ix^D=ix^D-jpe^D*nxpe^D;
 
   ! Get MPI processor index
-  CALL ipeD2ipe(jpe^D,jpe)
+  call ipeD2ipe(jpe^D,jpe)
 
-  RETURN
-END SUBROUTINE mpiix
+  return
+end subroutine mpiix
 
 !==============================================================================
-SUBROUTINE mpiixlimits(ix^L)
+subroutine mpiixlimits(ix^L)
 
   ! Convert global index limits to local index limits for this PE
 
-  USE constants
-  USE common_variables
-  INTEGER :: ix^L
+  use constants
+  use common_variables
+  integer :: ix^L
   !-----------------------------------------------------------------------------
   {^DLOOP
-  IF(ixmin^D > ixPEmax^D)THEN
+  if(ixmin^D > ixPEmax^D)then
      ixmin^D = nx^D
      ixmax^D = nx^D-1
-  ELSEIF(ixmax^D < ixPEmin^D)THEN
+  elseif(ixmax^D < ixPEmin^D)then
      ixmax^D = 0
      ixmin^D = 1
-  ELSE
-     ixmin^D = MAX(ixmin^D,ixPEmin^D) - ixPEmin^D + 1
-     ixmax^D = MIN(ixmax^D,ixPEmax^D) - ixPEmin^D + 1
-  ENDIF
+  else
+     ixmin^D = max(ixmin^D,ixPEmin^D) - ixPEmin^D + 1
+     ixmax^D = min(ixmax^D,ixPEmax^D) - ixPEmin^D + 1
+  endif
   \}
 
-  RETURN
-END SUBROUTINE mpiixlimits
+  return
+end subroutine mpiixlimits
 !==============================================================================
 
-SUBROUTINE mpistop(message)
+subroutine mpistop(message)
 
   ! Stop MPI run in an orderly fashion
 
-  USE constants
-  USE common_variables
+  use constants
+  use common_variables
 
-  CHARACTER(*) :: message
-  INTEGER :: nerrmpi
+  character(*) :: message
+  integer :: nerrmpi
 
   !------------------------------------------------------------------------------
-  WRITE(*,*)'ERROR for processor',ipe,':'
-  WRITE(*,*)message
-  CALL MPI_abort(MPI_COMM_WORLD, nerrmpi, ierrmpi)
+  write(*,*)'ERROR for processor',ipe,':'
+  write(*,*)message
+  call MPI_abort(MPI_COMM_WORLD, nerrmpi, ierrmpi)
 
-  STOP
-END SUBROUTINE mpistop
+  stop
+end subroutine mpistop
 
 !==============================================================================
-SUBROUTINE mpibound(nvar,var)
+subroutine mpibound(nvar,var)
 
   ! Fill in ghost cells of var(ixG,nvar) from other processors
 
-  USE constants
-  USE common_variables
+  use constants
+  use common_variables
 
-  INTEGER :: nvar
-  REAL(kind=8) :: var(ixG^T,nvar)
+  integer :: nvar
+  real(kind=8) :: var(ixG^T,nvar)
 
   ! processor indexes for left and right neighbors
-  INTEGER :: hpe,jpe
+  integer :: hpe,jpe
   ! index limits for the left and right side mesh and ghost cells 
-  INTEGER :: ixLM^L, ixRM^L, ixLG^L, ixRG^L
-  LOGICAL :: periodic
+  integer :: ixLM^L, ixRM^L, ixLG^L, ixRG^L
+  logical :: periodic
 
   ! There can be at most 2 receives in any direction for each PE
-  INTEGER :: nmpirequest, mpirequests(2)
-  INTEGER :: mpistatus(MPI_STATUS_SIZE,2)
-  COMMON /mpirecv/ nmpirequest,mpirequests,mpistatus
+  integer :: nmpirequest, mpirequests(2)
+  integer :: mpistatus(MPI_STATUS_SIZE,2)
+  common /mpirecv/ nmpirequest,mpirequests,mpistatus
   !-----------------------------------------------------------------------------
-  oktest=INDEX(teststr,'mpibound')>0
-  IF(oktest)WRITE(*,*)'mpibound ipe,nvar,varold=',&
-       ipe,nvar,var(ixtest^D,MIN(nvar,iwtest))
+  oktest=index(teststr,'mpibound')>0
+  if(oktest)write(*,*)'mpibound ipe,nvar,varold=',&
+       ipe,nvar,var(ixtest^D,min(nvar,iwtest))
 
   {^DLOOP
-  IF(npe^D>1)THEN
+  if(npe^D>1)then
      nmpirequest =0
      mpirequests(1:2) = MPI_REQUEST_NULL
 
@@ -340,128 +350,128 @@ SUBROUTINE mpibound(nvar,var)
      ixRM^L=ixG^L; ixRMmax^D=ixMmax^D; ixRMmin^D=ixMmax^D-dixBmax^D+1;
 
      ! Obtain left and right neighbor processors for this direction
-     CALL mpineighbors(^D,hpe,jpe)
+     call mpineighbors(^D,hpe,jpe)
 
-     IF(oktest)THEN
-        WRITE(*,*)'mpibound ipe,idir=',ipe,^D
-        WRITE(*,*)'mpibound ipe,ixLG=',ipe,ixLG^L
-        WRITE(*,*)'mpibound ipe,ixRG=',ipe,ixRG^L
-        WRITE(*,*)'mpibound ipe,ixLM=',ipe,ixLM^L
-        WRITE(*,*)'mpibound ipe,ixRM=',ipe,ixRM^L
-        WRITE(*,*)'mpibound ipe,hpe,jpe=',ipe,hpe,jpe
-     ENDIF
+     if(oktest)then
+        write(*,*)'mpibound ipe,idir=',ipe,^D
+        write(*,*)'mpibound ipe,ixLG=',ipe,ixLG^L
+        write(*,*)'mpibound ipe,ixRG=',ipe,ixRG^L
+        write(*,*)'mpibound ipe,ixLM=',ipe,ixLM^L
+        write(*,*)'mpibound ipe,ixRM=',ipe,ixRM^L
+        write(*,*)'mpibound ipe,hpe,jpe=',ipe,hpe,jpe
+     endif
 
      ! receive right (2) boundary from left neighbor hpe
-     IF(mpilowerB(^D) .OR. periodic)CALL mpirecvbuffer(nvar,ixRM^L,hpe,2)
+     if(mpilowerB(^D) .or. periodic)call mpirecvbuffer(nvar,ixRM^L,hpe,2)
      ! receive left (1) boundary from right neighbor jpe
-     IF(mpiupperB(^D) .OR. periodic)CALL mpirecvbuffer(nvar,ixLM^L,jpe,1)
+     if(mpiupperB(^D) .or. periodic)call mpirecvbuffer(nvar,ixLM^L,jpe,1)
      ! Wait for all receives to be posted
-     CALL MPI_BARRIER(MPI_COMM_WORLD,ierrmpi)
+     call MPI_BARRIER(MPI_COMM_WORLD,ierrmpi)
      ! Ready send left (1) boundary to left neighbor hpe
-     IF(mpilowerB(^D) .OR. periodic)CALL mpisend(nvar,var,ixLM^L,hpe,1)
+     if(mpilowerB(^D) .or. periodic)call mpisend(nvar,var,ixLM^L,hpe,1)
      ! Ready send right (2) boundary to right neighbor
-     IF(mpiupperB(^D) .OR. periodic)CALL mpisend(nvar,var,ixRM^L,jpe,2)
+     if(mpiupperB(^D) .or. periodic)call mpisend(nvar,var,ixRM^L,jpe,2)
      ! Wait for messages to arrive
-     CALL MPI_WAITALL(nmpirequest,mpirequests,mpistatus,ierrmpi)
+     call MPI_WAITALL(nmpirequest,mpirequests,mpistatus,ierrmpi)
      ! Copy buffer received from right (2) physical cells into left ghost cells
-     IF(mpilowerB(^D) .OR. periodic)CALL mpibuffer2var(2,nvar,var,ixLG^L)
+     if(mpilowerB(^D) .or. periodic)call mpibuffer2var(2,nvar,var,ixLG^L)
      ! Copy buffer received from left (1) physical cells into right ghost cells
-     IF(mpiupperB(^D) .OR. periodic)CALL mpibuffer2var(1,nvar,var,ixRG^L)
-  ENDIF
+     if(mpiupperB(^D) .or. periodic)call mpibuffer2var(1,nvar,var,ixRG^L)
+  endif
   \}
 
-  IF(oktest)WRITE(*,*)'mpibound ipe,varnew=',ipe,var(ixtest^D,MIN(nvar,iwtest))
+  if(oktest)write(*,*)'mpibound ipe,varnew=',ipe,var(ixtest^D,min(nvar,iwtest))
 
-  RETURN
-END SUBROUTINE mpibound
+  return
+end subroutine mpibound
 
 !==============================================================================
-SUBROUTINE mpisend(nvar,var,ix^L,qipe,iside)
+subroutine mpisend(nvar,var,ix^L,qipe,iside)
 
   ! Send var(ix^L,1:nvar) to processor qipe.
   ! jside is 0 for min and 1 for max side of the grid for the sending PE
 
-  USE constants
-  USE common_variables
+  use constants
+  use common_variables
 
-  INTEGER :: nvar
-  REAL(kind=8) :: var(ixG^T,nvar)
-  INTEGER :: ix^L, qipe, iside, n, ix^D, ivar
+  integer :: nvar
+  real(kind=8) :: var(ixG^T,nvar)
+  integer :: ix^L, qipe, iside, n, ix^D, ivar
   !----------------------------------------------------------------------------
-  oktest = INDEX(teststr,'mpisend')>0
+  oktest = index(teststr,'mpisend')>0
 
   n=0
-  DO ivar=1,nvar
-     {DO ix^DB=ixmin^DB,ixmax^DB;}
+  do ivar=1,nvar
+     {do ix^DB=ixmin^DB,ixmax^DB;}
      n=n+1
      sendbuffer(n)=var(ix^D,ivar)
-     {ENDDO^DLOOP\}
-  END DO
+     {enddo^DLOOP\}
+  end do
 
-  IF(oktest)THEN
-     WRITE(*,*)'mpisend ipe-->qipe,iside,itag',ipe,qipe,iside,10*ipe+iside
-     WRITE(*,*)'mpisend ipe,ix^L,var=',ipe,ix^L,var(ixtest^D,MIN(iwtest,nvar))
-  ENDIF
+  if(oktest)then
+     write(*,*)'mpisend ipe-->qipe,iside,itag',ipe,qipe,iside,10*ipe+iside
+     write(*,*)'mpisend ipe,ix^L,var=',ipe,ix^L,var(ixtest^D,min(iwtest,nvar))
+  endif
 
-  CALL MPI_RSEND(sendbuffer(1),n,MPI_DOUBLE_PRECISION,qipe,10*ipe+iside,&
+  call MPI_RSEND(sendbuffer(1),n,MPI_DOUBLE_PRECISION,qipe,10*ipe+iside,&
        MPI_COMM_WORLD,ierrmpi)
 
-  RETURN
-END SUBROUTINE mpisend
+  return
+end subroutine mpisend
 
 !==============================================================================
-SUBROUTINE mpirecvbuffer(nvar,ix^L,qipe,iside)
+subroutine mpirecvbuffer(nvar,ix^L,qipe,iside)
 
   ! receive buffer for a ghost cell region of size ix^L sent from processor qipe
   ! and sent from side iside of the grid
 
-  USE constants
-  USE common_variables
+  use constants
+  use common_variables
 
-  INTEGER:: nvar, ix^L, qipe, iside, n
+  integer:: nvar, ix^L, qipe, iside, n
 
-  INTEGER :: nmpirequest, mpirequests(2)
-  INTEGER :: mpistatus(MPI_STATUS_SIZE,2)
-  COMMON /mpirecv/ nmpirequest,mpirequests,mpistatus
+  integer :: nmpirequest, mpirequests(2)
+  integer :: mpistatus(MPI_STATUS_SIZE,2)
+  common /mpirecv/ nmpirequest,mpirequests,mpistatus
   !----------------------------------------------------------------------------
 
-  oktest = INDEX(teststr,'mpirecv')>0
+  oktest = index(teststr,'mpirecv')>0
 
   n = nvar* ^D&(ixmax^D-ixmin^D+1)*
 
-  IF(oktest)WRITE(*,*)'mpirecv ipe<--qipe,iside,itag,n',&
+  if(oktest)write(*,*)'mpirecv ipe<--qipe,iside,itag,n',&
        ipe,qipe,iside,10*qipe+iside,n
 
   nmpirequest = nmpirequest + 1
-  CALL MPI_IRECV(recvbuffer(1,iside),n,MPI_DOUBLE_PRECISION,qipe,10*qipe+iside,&
+  call MPI_IRECV(recvbuffer(1,iside),n,MPI_DOUBLE_PRECISION,qipe,10*qipe+iside,&
        MPI_COMM_WORLD,mpirequests(nmpirequest),ierrmpi)
 
-  RETURN
-END SUBROUTINE mpirecvbuffer
+  return
+end subroutine mpirecvbuffer
 
 !==============================================================================
-SUBROUTINE mpibuffer2var(iside,nvar,var,ix^L)
+subroutine mpibuffer2var(iside,nvar,var,ix^L)
 
   ! Copy mpibuffer(:,iside) into var(ix^L,1:nvar)
-  USE constants
-  USE common_variables
+  use constants
+  use common_variables
 
-  INTEGER :: nvar
-  REAL(kind=8):: var(ixG^T,nvar)
-  INTEGER:: ix^L,iside,n,ix^D,ivar
+  integer :: nvar
+  real(kind=8):: var(ixG^T,nvar)
+  integer:: ix^L,iside,n,ix^D,ivar
   !-----------------------------------------------------------------------------
-  oktest = INDEX(teststr,'buffer2var')>0
+  oktest = index(teststr,'buffer2var')>0
 
   n=0
-  DO ivar=1,nvar
-     {DO ix^DB=ixmin^DB,ixmax^DB;}
+  do ivar=1,nvar
+     {do ix^DB=ixmin^DB,ixmax^DB;}
      n=n+1
      var(ix^D,ivar)=recvbuffer(n,iside)
-     {ENDDO^DLOOP\}
-  END DO
+     {enddo^DLOOP\}
+  end do
 
-  IF(oktest)WRITE(*,*)'buffer2var: ipe,iside,ix^L,var',&
-       ipe,iside,ix^L,var(ixtest^D,MIN(iwtest,nvar))
+  if(oktest)write(*,*)'buffer2var: ipe,iside,ix^L,var',&
+       ipe,iside,ix^L,var(ixtest^D,min(iwtest,nvar))
 
-  RETURN
-END SUBROUTINE mpibuffer2var
+  return
+end subroutine mpibuffer2var

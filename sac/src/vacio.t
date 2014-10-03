@@ -192,8 +192,8 @@ subroutine readparameters(w)
   {^IFMPI
   ! Extract and check the directional processor numbers and indexes
   ! and concat the PE number to the input and output filenames
-  call mpisetnpeDipeD(filenameini)
-  call mpisetnpeDipeD(filename(fileout_))
+  call mpisetnpeDipeD(filenameini, 'inifile')
+  call mpisetnpeDipeD(filename(fileout_), 'outfile')
   }
 
   if(oktest) then 
@@ -1239,6 +1239,7 @@ subroutine savefileout_gdf(w,ix^L)
   real(kind=8), dimension(ix^S) :: wdata
   real(kind=8), dimension(:, :, :), allocatable, target :: wdata3D
   real(kind=8), dimension(ixmax1, ixmax2, 2) :: temp_x
+  integer(kind=8), dimension(3) :: offset, count, file_dims
 
   gdf_nx = (/ 1, 1, 1 /)
   gdf_nx(:^ND) = (/ ixmax^D-ixmin^D+1 /)
@@ -1295,9 +1296,28 @@ subroutine savefileout_gdf(w,ix^L)
   
   ! WRITE ACTUAL DATA HERE
 
-  call h5pcreate_f(H5P_DATASET_XFER_F, xfer_prp, error)
-  call sacgdf_write_datasets(doml_g_id, xfer_prp, w, ix^L)
+  !Calculate offset and count
+  offset = (/ 0, 0, 0 /)
+  count = (/ 1, 1, 1 /)
+  {count(^D) = ixmax^D; }
+  file_dims = (/ 1, 1, 1 /)
+  {file_dims(^D) = ixmax^D * npe^D; }
+  print*, file_dims
+  ! If we are not in MPI mode use the default xfer_prp
+  xfer_prp = H5P_DEFAULT_F
+
+  {^IFMPI
+  {offset(^D) = ixmax^D * ipe^D; }
+  {count(^D) = ixmax^D; }
   
+  ! Create property list for collective dataset write
+  call h5pcreate_f(H5P_DATASET_XFER_F, xfer_prp, error)
+  call h5pset_dxpl_mpio_f(xfer_prp, H5FD_MPIO_COLLECTIVE_F, error)
+  }
+
+  call h5pcreate_f(H5P_DATASET_XFER_F, xfer_prp, error)
+  call sacgdf_write_datasets(doml_g_id, w, ix^L, xfer_prp, file_dims, offset, count)
+
   call h5fclose_f(file_id, error)
   call h5close_f(error)
   
@@ -1401,7 +1421,7 @@ end subroutine flushunit
 
 !================================================================================
 
-  subroutine sacgdf_write_datasets(place, plist_id, w, ix^L)
+  subroutine sacgdf_write_datasets(place, w, ix^L, xfer_prp, file_dims, offset, count)
     use hdf5, only: HID_T
     use gdf_datasets
     use common_variables, only: ixGhi^D, ixGlo^D, nw
@@ -1409,18 +1429,19 @@ end subroutine flushunit
     implicit none
 
     integer(HID_T), intent(inout) :: place
-    integer(HID_T), intent(inout) :: plist_id         !< Property list identifier
+    integer(HID_T), intent(inout) :: xfer_prp
+    integer(kind=8), dimension(3), intent(inout) :: offset, count, file_dims
     integer, intent(in) :: ix^L
     real(kind=8), intent(in):: w(ixG^T,nw)
 
 
-    call sacgdf_write_datasets_1D(place, plist_id, w, ix^L)
-    {^IFTWOD   call sacgdf_write_datasets_2D(place, plist_id, w, ix^L) }
-    {^IFTHREED call sacgdf_write_datasets_3D(place, plist_id, w, ix^L) }
+    call sacgdf_write_datasets_1D(place, w, ix^L, xfer_prp, file_dims, offset, count)
+    {^IFTWOD   call sacgdf_write_datasets_2D(place, w, ix^L, xfer_prp, file_dims, offset, count) }
+    {^IFTHREED call sacgdf_write_datasets_3D(place, w, ix^L, xfer_prp, file_dims, offset, count) }
 
   end subroutine sacgdf_write_datasets
   
-   subroutine sacgdf_write_datasets_1D(place, plist_id, w, ix^L)
+   subroutine sacgdf_write_datasets_1D(place, w, ix^L, xfer_prp, file_dims, offset, count)
     use hdf5, only: HID_T
     use gdf_datasets, only: write_dataset
     use common_variables, only: rho_, rhob_, e_, eb_, m1_, b1_, bg1_
@@ -1430,7 +1451,8 @@ end subroutine flushunit
     implicit none
 
     integer(HID_T), intent(inout) :: place
-    integer(HID_T), intent(inout) :: plist_id         !< Property list identifier
+    integer(HID_T), intent(inout) :: xfer_prp
+    integer(kind=8), dimension(3), intent(inout) :: offset, count, file_dims
     integer, intent(in) :: ix^L
     real(kind=8), intent(in) :: w(ixG^T,nw)
 
@@ -1448,50 +1470,49 @@ end subroutine flushunit
     wdata(ix^S) = w(ix^S, m1_) / (w(ix^S, rho_) + w(ix^S, rhob_))
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
-    call write_dataset(place, 'velocity_x', d_ptr, plist_id)
-
+    call write_dataset(place, 'velocity_x', d_ptr, xfer_prp, file_dims, count, offset)
     ! Density pert
     wdata(ix^S) = w(ix^S, rho_)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
-    call write_dataset(place, 'density_pert', d_ptr, plist_id)
+    call write_dataset(place, 'density_pert', d_ptr, xfer_prp, file_dims, count, offset)
 
     ! Denisty bg
     wdata(ix^S) = w(ix^S, rhob_)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
-    call write_dataset(place, 'density_bg', d_ptr, plist_id)
+    call write_dataset(place, 'density_bg', d_ptr, xfer_prp, file_dims, count, offset)
 
     ! Mag field pert
     wdata(ix^S) = w(ix^S, b1_)*sqrt(mu0)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
-    call write_dataset(place, 'mag_field_x_pert', d_ptr, plist_id)
+    call write_dataset(place, 'mag_field_x_pert', d_ptr, xfer_prp, file_dims, count, offset)
 
     ! Mag field bg
     wdata(ix^S) = w(ix^S, bg1_)*sqrt(mu0)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
-    call write_dataset(place, 'mag_field_x_bg', d_ptr, plist_id)
+    call write_dataset(place, 'mag_field_x_bg', d_ptr, xfer_prp, file_dims, count, offset)
 
     ! internal energy pert
     wdata(ix^S) = w(ix^S, e_)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
-    call write_dataset(place, 'internal_energy_pert', d_ptr, plist_id)
+    call write_dataset(place, 'internal_energy_pert', d_ptr, xfer_prp, file_dims, count, offset)
 
     ! internal energy bg
     wdata(ix^S) = w(ix^S, eb_)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
-    call write_dataset(place, 'internal_energy_bg', d_ptr, plist_id)
+    call write_dataset(place, 'internal_energy_bg', d_ptr, xfer_prp, file_dims, count, offset)
 
 
   end subroutine sacgdf_write_datasets_1D
 
 
 {^IFTWOD
-  subroutine sacgdf_write_datasets_2D(place, plist_id, w, ix^L)
+  subroutine sacgdf_write_datasets_2D(place, w, ix^L, xfer_prp, file_dims, offset, count)
     use hdf5, only: HID_T
     use gdf_datasets, only: write_dataset
     use common_variables, only: rho_, rhob_, m2_, b2_, bg2_
@@ -1501,7 +1522,8 @@ end subroutine flushunit
     implicit none
 
     integer(HID_T), intent(inout) :: place
-    integer(HID_T), intent(inout) :: plist_id         !< Property list identifier
+    integer(HID_T), intent(inout) :: xfer_prp
+    integer(kind=8), dimension(3), intent(inout) :: offset, count, file_dims
     integer, intent(in) :: ix^L
     real(kind=8), intent(in) :: w(ixG^T,nw)
     
@@ -1519,25 +1541,25 @@ end subroutine flushunit
     wdata(ix^S) = w(ix^S, m2_) / (w(ix^S, rho_) + w(ix^S, rhob_))
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
-    call write_dataset(place, 'velocity_y', d_ptr, plist_id)
+    call write_dataset(place, 'velocity_y', d_ptr, xfer_prp, file_dims, count, offset)
 
     ! Mag field pert
     wdata(ix^S) = w(ix^S, b2_)*sqrt(mu0)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
-    call write_dataset(place, 'mag_field_y_pert', d_ptr, plist_id)
+    call write_dataset(place, 'mag_field_y_pert', d_ptr, xfer_prp, file_dims, count, offset)
 
     ! Mag field bg
     wdata(ix^S) = w(ix^S, bg2_)*sqrt(mu0)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
-    call write_dataset(place, 'mag_field_y_bg', d_ptr, plist_id)
+    call write_dataset(place, 'mag_field_y_bg', d_ptr, xfer_prp, file_dims, count, offset)
 
 
   end subroutine sacgdf_write_datasets_2D
 }
 {^IFTHREED
-  subroutine sacgdf_write_datasets_3D(place, plist_id, w, ix^L)
+  subroutine sacgdf_write_datasets_3D(place, w, ix^L, xfer_prp, file_dims, offset, count)
     use hdf5, only: HID_T
     use gdf_datasets, only: write_dataset
     use common_variables, only: rho_, rhob_, m3_, b3_, bg3_
@@ -1547,7 +1569,8 @@ end subroutine flushunit
     implicit none
 
     integer(HID_T), intent(inout) :: place
-    integer(HID_T), intent(inout) :: plist_id         !< Property list identifier
+    integer(HID_T), intent(inout) :: xfer_prp
+    integer(kind=8), dimension(3), intent(inout) :: offset, count, filedims
     integer, intent(in) :: ix^L
     real(kind=8), intent(in) :: w(ixG^T,nw)
 
@@ -1565,37 +1588,37 @@ end subroutine flushunit
     wdata(ix^S) = w(ix^S, m2_) / (w(ix^S, rho_) + w(ix^S, rhob_))
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
-    call write_dataset(place, 'velocity_y', d_ptr, plist_id)
+    call write_dataset(place, 'velocity_y', d_ptr, xfer_prp, file_dims, count, offset)
 
     ! Mag field pert
     wdata(ix^S) = w(ix^S, b2_)*sqrt(mu0)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
-    call write_dataset(place, 'mag_field_y_pert', d_ptr, plist_id)
+    call write_dataset(place, 'mag_field_y_pert', d_ptr, xfer_prp, file_dims, count, offset)
 
     ! Mag field bg
     wdata(ix^S) = w(ix^S, bg2_)*sqrt(mu0)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
-    call write_dataset(place, 'mag_field_y_bg', d_ptr, plist_id)
+    call write_dataset(place, 'mag_field_y_bg', d_ptr, xfer_prp, file_dims, count, offset)
 
     ! Velocity
     wdata(ix^S) = w(ix^S, m3_) / (w(ix^S, rho_) + w(ix^S, rhob_))
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
-    call write_dataset(place, 'velocity_z', d_ptr, plist_id)
+    call write_dataset(place, 'velocity_z', d_ptr, xfer_prp, file_dims, count, offset)
 
     ! Mag field pert
     wdata(ix^S) = w(ix^S, b3_)*sqrt(mu0)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
-    call write_dataset(place, 'mag_field_z_pert', d_ptr, plist_id)
+    call write_dataset(place, 'mag_field_z_pert', d_ptr, xfer_prp, file_dims, count, offset)
 
     ! Mag field bg
     wdata(ix^S) = w(ix^S, bg3_)*sqrt(mu0)
     wdata3D = reshape(wdata, gdf_nx)
     d_ptr => wdata3D
-    call write_dataset(place, 'mag_field_z_bg', d_ptr, plist_id)
+    call write_dataset(place, 'mag_field_z_bg', d_ptr, xfer_prp, file_dims, count, offset)
 
 
   end subroutine sacgdf_write_datasets_3D
