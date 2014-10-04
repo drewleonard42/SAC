@@ -73,7 +73,8 @@ subroutine mpisetnpeDipeD(name, filetype)
 
   implicit none
   
-  character(^LENNAME), intent(inout) :: name, filetype
+  character(^LENNAME), intent(inout) :: name
+  character(^LENTYPE), intent(in) :: filetype
   character(^LENNAME) :: nametail
   integer:: i,qnpe^D
   logical:: npeDknown,npeDinname
@@ -132,8 +133,7 @@ subroutine mpisetnpeDipeD(name, filetype)
      i = i+3+2*^ND
   endif
 
-  ! insert ipe number into the filename
-  print*, filetype
+  ! insert ipe number into the filename, only if not using gdf files.
   if ((filetype .eq. 'outfile') .and. (.not. typefileout .eq. 'gdf')) then
      write(name(i:^LENNAME),"('_',i3.3,a)") ipe,nametail(1:^LENNAME-i-4)
   end if

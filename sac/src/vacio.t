@@ -15,7 +15,8 @@ subroutine readparameters(w)
 
   real(kind=8):: w(ixG^T,nw)
 
-  character(^LENTYPE):: typepred(nw),typefull(nw),typeimpl(nw),typefilter(nw)
+  character(^LENTYPE):: typepred(nw),typefull(nw),typeimpl(nw),typefilter(nw), mpifiletype
+
   real(kind=8):: muscleta
   integer:: i,j,k,iw,idim,iB,ifile,isave
   logical:: implmrpc,globalixtest^IFMPI
@@ -192,8 +193,10 @@ subroutine readparameters(w)
   {^IFMPI
   ! Extract and check the directional processor numbers and indexes
   ! and concat the PE number to the input and output filenames
-  call mpisetnpeDipeD(filenameini, 'inifile')
-  call mpisetnpeDipeD(filename(fileout_), 'outfile')
+  mpifiletype = 'inifile'
+  call mpisetnpeDipeD(filenameini, mpifiletype)
+  mpifiletype = 'outfile'
+  call mpisetnpeDipeD(filename(fileout_), mpifiletype)
   }
 
   if(oktest) then 
@@ -1243,9 +1246,12 @@ subroutine savefileout_gdf(w,ix^L)
 
   gdf_nx = (/ 1, 1, 1 /)
   gdf_nx(:^ND) = (/ ixmax^D-ixmin^D+1 /)
+  file_dims = gdf_nx
+  {^IFMPI {file_dims(^D) = (ixmax^D-ixmin^D+1) * npe^D; }}
+  print*, file_dims
   print*, "savefile_gdf"
-  print*, gdf_nx
-  print*, ix^L
+  print*, ipe, gdf_nx
+  print*, ipe, ix^L
 
   allocate(wdata3D(1:gdf_nx(1), 1:gdf_nx(2), 1:gdf_nx(3)))
   print*, shape(wdata3D)
@@ -1266,7 +1272,7 @@ subroutine savefileout_gdf(w,ix^L)
   gdf_sp%cosmological_simulation = 0
   gdf_sp%current_time = t
   gdf_sp%dimensionality = ^ND
-  gdf_sp%domain_dimensions = gdf_nx ! on disk
+  gdf_sp%domain_dimensions = file_dims ! on disk
   gdf_sp%domain_left_edge = (/ 0, 0, 0 /)
   gdf_sp%domain_right_edge = (/ 1, 1, 1 /)
   gdf_sp%domain_left_edge(:^ND) = x(ixmin^D, :) !bottom left corner
@@ -1281,7 +1287,7 @@ subroutine savefileout_gdf(w,ix^L)
   
   rd%grid_parent_id = 0
   rd%grid_left_index(:, 1) = (/ 0, 0 /)
-  rd%grid_dimensions(:, 1) = gdf_nx
+  rd%grid_dimensions(:, 1) = file_dims
   rd%grid_level = 0
   rd%grid_particle_count(:, 1) = (/ 0 /)
 
@@ -1299,23 +1305,19 @@ subroutine savefileout_gdf(w,ix^L)
   !Calculate offset and count
   offset = (/ 0, 0, 0 /)
   count = (/ 1, 1, 1 /)
-  {count(^D) = ixmax^D; }
-  file_dims = (/ 1, 1, 1 /)
-  {file_dims(^D) = ixmax^D * npe^D; }
-  print*, file_dims
+  {count(^D) = ixmax^D-ixmin^D+1; }
   ! If we are not in MPI mode use the default xfer_prp
-  xfer_prp = H5P_DEFAULT_F
+  call h5pcreate_f(H5P_DATASET_XFER_F, xfer_prp, error)
 
   {^IFMPI
-  {offset(^D) = ixmax^D * ipe^D; }
-  {count(^D) = ixmax^D; }
+  {offset(^D) = (ixmax^D-ixmin^D+1) * ipe^D; }
+  {count(^D) = ixmax^D-ixmin^D+1; }
   
   ! Create property list for collective dataset write
-  call h5pcreate_f(H5P_DATASET_XFER_F, xfer_prp, error)
-  call h5pset_dxpl_mpio_f(xfer_prp, H5FD_MPIO_COLLECTIVE_F, error)
+  !call h5pcreate_f(H5P_DATASET_XFER_F, xfer_prp, error)
+  !call h5pset_dxpl_mpio_f(xfer_prp, H5FD_MPIO_COLLECTIVE_F, error)
   }
 
-  call h5pcreate_f(H5P_DATASET_XFER_F, xfer_prp, error)
   call sacgdf_write_datasets(doml_g_id, w, ix^L, xfer_prp, file_dims, offset, count)
 
   call h5fclose_f(file_id, error)
