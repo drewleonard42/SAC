@@ -39,8 +39,15 @@ F77=pgf77
 F77FLG=-132 -dusty -Mnobounds
 
 #F90=f95
-F90=pgf90
-F90FLG=-Mfreeform -Mnobounds
+ifndef F90
+    F90=pgf90
+endif
+
+ifndef F90FLG
+    F90FLG=-Mfreeform -Mnobound -04 -w=alls
+endif
+#F90=pgf90
+#F90FLG=-Mfreeform -Mnobounds
 
 #
 # Select one:
@@ -52,7 +59,7 @@ F77FLAGS= $(F77FLG) -O4 -w=all #        final compile
 #
 # Select one:
 #
-F90FLAGS= $(F90FLG) -O4 -w=all #        optimized
+F90FLAGS= $(F90FLG) #        optimized
 #F90FLAGS= $(F90FLG) -O1 -C -w=all #    develop
 #F90FLAGS= $(F90FLG) -O0 -gline -C #            debugging
 
@@ -365,11 +372,11 @@ PREFOR=$(F90TOF90)
 ############### VACPreProcessor ################
 #For the dependency
 
-VACPP_=vacpp.pl
+VACPP_=./vacpp.pl
 
 # ... select one for the compilation rules:
 #
-VACPP =vacpp.pl #			
+VACPP =./vacpp.pl #			
 #VACPP =vacpp.pl -O #			Optimized shifts (always used by HPF)
 #VACPP =vacpp.pl -maxlen=72 #		Reduced maximum line length
 #VACPP =vacpp.pl -O -maxlen=72 #	Optimization and reduction 
