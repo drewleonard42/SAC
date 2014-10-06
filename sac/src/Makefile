@@ -1,7 +1,12 @@
 # This is a VERY striped down makefile for compiling sac with gfortran
-# This will become a SAC only f2py makefile hopefully 
-F90=mpif90
-F90FLG=-std=f2008
+
+# Check to see if the ENV variables are defined for the compiler
+ifndef F90
+    F90=mpif90
+endif
+ifndef F90FLG
+    F90FLG=-std=f2008
+endif
 F90FLAGS= $(F90FLG)
 
 FOR=$(F90)
@@ -30,8 +35,8 @@ VAC_OBJ = vac$O vacio$O vacgrid$O vacphys0$O vacphys$O vacusr$O
 # The VACCD, VACMC, VACFCT, VACTVDLF, VACTVD, VACIMPL, VACPOISSON, VACMPI 
 # modules are removed or added in the following two lines by "setvac". 
 # DO NOT TOUCH THESE TWO LINES:
-VACFOR = $(VAC_FOR) vaccd$F vacmpi$F
-VACOBJ = $(VAC_OBJ) vaccd$O vacmpi$O
+VACFOR = $(VAC_FOR) vaccd$F
+VACOBJ = $(VAC_OBJ) vaccd$O
 
 ROEOBJ = roetest$O vacphys0$O vacphys$O
 
