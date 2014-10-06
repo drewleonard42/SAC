@@ -17,12 +17,12 @@ $ndim=2; $ndir=2;
 $phi=-9; $z=-8;
 $if_cd=1; $if_mc=0; $if_fct=0; $if_tvdlf=0; $if_tvd=0; 
 $if_impl=0; $if_poisson=0; $if_ct=0; $if_gencoord=0; $if_resist=0; $if_rk=1;
-$if_mpi=0;
+$if_mpi=1;
 
 # SETVAC READS UP TO THIS POINT
 
 # Default maximum length for lines unless set by eg. "vacpp.pl -maxlen=72 ..."
-$maxlen=78 unless $maxlen;
+$maxlen=120 unless $maxlen;
 
 # For interactive use accept -d=12 flag
 if($d){
@@ -322,7 +322,7 @@ sub shiftopt{
         $indent=$`;
         $_='';
 	die "Missing SHIFT BEGIN before $.\n" if $shiftregion eq '';
-	die "Missing SHIFT before $.\n" unless defined(%shift0);
+    #die "Missing SHIFT before $.\n" unless defined(%shift0);
 	$shiftcount++;
         # Produce the Perl match string and the Fortran IF condition string
 	@shifted=keys(%shift0);
@@ -379,9 +379,9 @@ sub printline{
        $line=&unquote(&format90($line));
        # CORRECT REFERENCES TO INCLUDE FILES
        if($line=~/^ *include 'vac/){
-          $line=~s/include 'vacdef\.\w+'/include 'vacdef.f'/;
-          $line=~s/include 'vacpar\.\w+'/include 'vacpar.f'/;
-          $line=~s/include 'vacusrpar\.\w+'/include 'vacusrpar.f'/;
+          $line=~s/include 'vacdef\.\w+'/include 'vacdef.f90'/;
+          $line=~s/include 'vacpar\.\w+'/include 'vacpar.f90'/;
+          $line=~s/include 'vacusrpar\.\w+'/include 'vacusrpar.f90'/;
        }
        print $line,"$comment\n";
     }

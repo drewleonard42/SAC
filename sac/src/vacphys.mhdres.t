@@ -6,7 +6,7 @@ subroutine getdt_res(w,ix^L)
 
 ! If resistivity is  not zero, check diffusion time limit for dt
 
-include 'vacdef.f'
+include 'vacdef.f90'
 
 double precision:: w(ixG^T,nw),dtdiff
 integer:: ix^L,idim,idirmin
@@ -49,7 +49,7 @@ subroutine getcurrent(w,ix^L,idirmin)
 
 ! Calculate idirmin and the idirmin:3 components of the common current array
 
-include 'vacdef.f'
+include 'vacdef.f90'
 
 integer, parameter:: idirmin0=7-2*ndir
 double precision:: w(ixG^T,nw)
@@ -98,7 +98,7 @@ subroutine addsource_res1(qdt,ixI^L,ix^L,iws,qtC,w,qt,wnew)
 ! Add resistive source to wnew within ixL if possible, otherwise shrink ixL
 ! Uses 3 point stencil (1 neighbour) in each direction, non-conservative
 
-include 'vacdef.f'
+include 'vacdef.f90'
 
 integer::          ixI^L,ix^L,iws(niw_)
 double precision:: qdt,qtC,qt,w(ixG^T,nw),wnew(ixG^T,nw)
@@ -225,7 +225,7 @@ subroutine addsource_res2(qdt,ixI^L,ixO^L,iws,qtC,w,qt,wnew)
 ! Add resistive source to wnew within ixO if possible, otherwise shrink ixO
 ! Uses 5 point stencil (2 neighbours) in each direction, conservative
 
-include 'vacdef.f'
+include 'vacdef.f90'
 
 integer::          ixI^L,ixO^L,iws(niw_)
 double precision:: qdt,qtC,qt,w(ixG^T,nw),wnew(ixG^T,nw)
@@ -302,7 +302,7 @@ end
 
 
 subroutine gradient(bebe,q,ix^L,idim,gradq)
-include 'vacdef.f'
+include 'vacdef.f90'
 integer:: ix^L,idim
 double precision:: q(ixG^T),gradq(ixG^T)
 integer:: hx^L,kx^L
