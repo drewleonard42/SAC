@@ -1248,13 +1248,8 @@ subroutine savefileout_gdf(w,ix^L)
   gdf_nx(:^ND) = (/ ixmax^D-ixmin^D+1 /)
   file_dims = gdf_nx
   {^IFMPI {file_dims(^D) = (ixmax^D-ixmin^D+1) * npe^D; }}
-  print*, file_dims
-  print*, "savefile_gdf"
-  print*, ipe, gdf_nx
-  print*, ipe, ix^L
 
   allocate(wdata3D(1:gdf_nx(1), 1:gdf_nx(2), 1:gdf_nx(3)))
-  print*, shape(wdata3D)
 
   ! Open file
   call h5open_f(error)
