@@ -3,11 +3,11 @@
 /
 
 &filelist
-	filenameini='/home/cs1sjm/gdf_testing/mhdmodes_2D_00000000.gdf'
+	filenameini='/archive/gdf_testing/mhdmodes_2D_00000000.gdf'
 
 	typefileini='gdf'
-	filename=   '/home/cs1sjm/gdf_testing/mhdmodes_2D.log',
-     		    '/home/cs1sjm/gdf_testing/mhdmodes_2D_ii_'
+	filename=   '/archive/gdf_testing/mhdmodes_2D.log',
+     		    '/archive/gdf_testing/mhdmodes_2D_ii_'
 	typefileout='gdf'
         fullgridout= F
         fullgridini= F

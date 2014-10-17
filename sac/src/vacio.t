@@ -550,6 +550,7 @@ subroutine readfileini(w)
   
   use constants
   use common_variables
+  implicit none
 
   real(kind=8):: w(ixG^T,nw)
 
@@ -601,6 +602,24 @@ subroutine readfileini(w)
   print*, "out readini"
   return
 end subroutine readfileini
+
+subroutine calculate_x_edges(ix^L)
+  ! Calculate the value of the very far left and very far right corner of the coordinate array, in all dimensions.
+  ! If we are using a non-gdf input file we need to broadcast this information to all the processes.
+  use common_variables, only: x, x_left_edge, x_right_edge {^IFMPI , npe, MPI_DOUBLE, MPI_COMM_WORLD, ierrmpi}
+  implicit none
+
+  integer, intent(IN) :: ix^L
+ 
+  x_left_edge(1:^ND) = x(ixmin^D, :)
+  x_right_edge(1:^ND) = x(ixmax^D, :)
+
+  {^IFMPI
+  call MPI_Bcast(x_left_edge, 3, MPI_DOUBLE, 0, MPI_COMM_WORLD, ierrmpi)
+  call MPI_Bcast(x_right_edge, 3, MPI_DOUBLE, npe-1, MPI_COMM_WORLD, ierrmpi)
+  }
+
+end subroutine calculate_x_edges
 
 !=============================================================================
 subroutine readfileini_asc(w)
@@ -671,6 +690,7 @@ subroutine readfileini_asc(w)
      read(unitini,*,iostat=ios)(x(ix^D,idim),idim=1,ndim),&
           (w(ix^D,iw),iw=1,nwin),(wextra,iw=nwin+1,nwini)
      {end do^D&\}
+     call calculate_x_edges(ix^L)
      if(ios/=0)then
         write(uniterr,*)'Stop: iostat=',ios
         call die('Error in reading file')
@@ -762,6 +782,7 @@ subroutine readfileini_bin(w)
 
      ! Read x array
      read(unitini,iostat=ios)(x(ix^S,idim),idim=1,ndim)
+     call calculate_x_edges(ix^L)
 
      ! Read w array
      ! To conform savefileout_bin we use loop for iw
@@ -793,7 +814,7 @@ subroutine readfileini_gdf(w)
   use gdf, only: gdf_parameters_T, gdf_root_datasets_T, gdf_field_type_T
   use hdf5, only: h5open_f, h5gopen_f, h5fopen_f, h5fclose_f, h5close_f, HID_T, H5F_ACC_RDONLY_F
   use sacgdf, only: sacgdf_read_file, build_x_array, sacgdf_read_datasets
-  use common_variables, only: ixGlo^D, ixGhi^D, nw, filenameini, nx, x, t, gencoord, fileheadini, unitterm, teststr
+  use common_variables, only: ixGlo^D, ixGhi^D, nw, filenameini, nx, x, t, gencoord, fileheadini, unitterm, teststr, x_left_edge, x_right_edge
 
   implicit none
 
@@ -855,6 +876,9 @@ subroutine readfileini_gdf(w)
 
   ! Build the x array
   call build_x_array(ix^L, disk_nx, gdf_sp%domain_left_edge(:ndimini), gdf_sp%domain_right_edge(:ndimini), x)
+  ! Save the global left and right corners
+  x_left_edge = gdf_sp%domain_left_edge
+  x_right_edge = gdf_sp%domain_right_edge
   
   ! Reconstruct the w array
   ! Create field groups
@@ -1268,10 +1292,8 @@ subroutine savefileout_gdf(w,ix^L)
   gdf_sp%current_time = t
   gdf_sp%dimensionality = ^ND
   gdf_sp%domain_dimensions = file_dims ! on disk
-  gdf_sp%domain_left_edge = (/ 0, 0, 0 /)
-  gdf_sp%domain_right_edge = (/ 1, 1, 1 /)
-  gdf_sp%domain_left_edge(:^ND) = x(ixmin^D, :) !bottom left corner
-  gdf_sp%domain_right_edge(:^ND) = x(ixmax^D, :) ! top right corner
+  gdf_sp%domain_left_edge = x_left_edge
+  gdf_sp%domain_right_edge = x_right_edge
   gdf_sp%field_ordering = 1
   gdf_sp%num_ghost_zones = 0 !on disk
   gdf_sp%refine_by = 0

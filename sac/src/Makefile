@@ -36,8 +36,8 @@ VAC_OBJ = vac$O vacio$O vacgrid$O vacphys0$O vacphys$O vacusr$O
 # The VACCD, VACMC, VACFCT, VACTVDLF, VACTVD, VACIMPL, VACPOISSON, VACMPI 
 # modules are removed or added in the following two lines by "setvac". 
 # DO NOT TOUCH THESE TWO LINES:
-VACFOR = $(VAC_FOR) vaccd$F
-VACOBJ = $(VAC_OBJ) vaccd$O
+VACFOR = $(VAC_FOR) vaccd$F vacmpi$F
+VACOBJ = $(VAC_OBJ) vaccd$O vacmpi$O
 
 ROEOBJ = roetest$O vacphys0$O vacphys$O
 

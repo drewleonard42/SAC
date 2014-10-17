@@ -121,6 +121,9 @@ module common_variables
   !Grid parameters
   INTEGER:: ixM^L,ixG^L,nx^D,nx(ndim)
   INTEGER:: dixB^L
+
+  ! Global x array edges
+  real(kind=8), dimension(3) :: x_left_edge = (/ 0, 0, 0 /), x_right_edge = (/ 1, 1, 1 /)
   ! x and dx are local for HPF
   REAL(kind=8):: x(IXG^T,ndim),dx(IXG^T,ndim)
   REAL(kind=8):: volume,dvolume(IXG^T)
