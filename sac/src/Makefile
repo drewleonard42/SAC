@@ -39,6 +39,11 @@ VAC_OBJ = vac$O vacio$O vacgrid$O vacphys0$O vacphys$O vacusr$O
 VACFOR = $(VAC_FOR) vaccd$F vacmpi$F
 VACOBJ = $(VAC_OBJ) vaccd$O vacmpi$O
 
+# The VACMPI module is removed or added the following two lines by "setvac".
+# DO NOT TOUCH THESE TWO LINES:
+VACINIFOR = vacini$F vacio$F vacphys0$F vacusr$F vacmpi$F
+VACINIOBJ = vacini$O vacio$O vacphys0$O vacusr$O vacmpi$O
+
 ROEOBJ = roetest$O vacphys0$O vacphys$O
 
 ################### Translation and dependency rules #######################
@@ -52,6 +57,7 @@ $(VACFOR) vacini$F vacdef$F vacpar$F vacusrpar$F sacgdf$F       : $(PREPROC)
 roetest$F                           : $(PREPROC)
 
 $(VACOBJ) vacini$O vacall$O vaciniall$O vacsmall$O roetest$O sacgdf$0   : $(INCLUDES)
+$(VACINIOBJ) vacini$O vacall$O vaciniall$O vacsmall$O roetest$O sacgdf$0   : $(INCLUDES)
 
 vacusrpar$F: vacusrpar.t
 	$(VACPP) $< $(PREFOR) > $@
@@ -84,6 +90,10 @@ vacgrid$F: vacgrid.t
 
 gdf :
 	$(FOR) $(FORFLG) -c $(GDF_INCLUDES)
+
+# The "vacini" and "vac" targets use the default Fortran compiler
+vacini : gdf $(VACINIOBJ) $(LIBS_)
+	$(FOR) $(FORFLG) -o $(VACDIR)/vacini $(GDF_INCLUDES) $(VACINIOBJ) $(LIBS)
 
 vac : gdf $(VACOBJ) $(LIBS_)
 	$(FOR) $(FORFLG) -o $(VACDIR)/vac $(GDF_INCLUDES) $(VACOBJ) $(LIBS) 
