@@ -22,19 +22,24 @@ else:
     F_flags = ['-free', '-mcmodel=medium']
     options = ['vaccd', 'vacmpi']
 
-F_ext = '.f'
+F_ext = '.f90'
 pre_processor = './vacpp.sh'
 sources = ['vac', 'vacio', 'vacgrid', 'vacphys0', 'vacphys', 'vacusr']
-includes = ['vacpar', 'vacusrpar', 'vacdef']
+includes = [ 'vacdef', 'vacpar', 'vacusrpar']
 
 def build():
     pre_process()
+    compile_modules()
     compile()
     link()
 
 def pre_process():
     for source in sources + includes + options:
         run(pre_processor, source+'.t',  source+F_ext)
+
+def compile_modules():
+    for source in includes:
+        run(F_compiler, *F_flags + ['-c', source+F_ext])
 
 def compile():
     for source in sources + options:
