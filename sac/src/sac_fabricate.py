@@ -24,8 +24,12 @@ else:
 
 F_ext = '.f90'
 pre_processor = './vacpp.sh'
+# sources are the main files
 sources = ['vac', 'vacio', 'vacgrid', 'vacphys0', 'vacphys', 'vacusr']
+# includes are seperate source files that do not need compiling, but
+# pre-processing
 includes = ['vacusrpar', 'vacpar']
+# modules are files containing modules, and therefore need compiling first.
 modules = ['vacdef']
 
 def build():
