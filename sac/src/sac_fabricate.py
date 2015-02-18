@@ -25,6 +25,7 @@ else:
 F_ext = '.f90'
 pre_processor = './vacpp.sh'
 sources = ['vac', 'vacio', 'vacgrid', 'vacphys0', 'vacphys', 'vacusr']
+includes = ['vacusrpar', 'vacpar']
 modules = ['vacdef']
 
 def build():
@@ -34,7 +35,7 @@ def build():
     link()
 
 def pre_process():
-    for source in sources + modules + options:
+    for source in sources + modules + includes + options:
         run(pre_processor, source+'.t',  source+F_ext)
 
 def compile_modules():
