@@ -86,7 +86,7 @@ vac :$(VACOBJ) $(LIBS_)
 ###### Removing object files, precompiled Fortran files, and symbolic links
 
 clean   :
-	rm -f vac*$F roetest$F Vvac*$F vac*.d *$O *~
+	rm -f vac*$F roetest$F Vvac*$F vac*.d *$O *~ *mod
 
 cleanall: clean
 	rm -f vacphys.t vacphys0.t vacpar.t vacusrpar.t vacusr.t 
