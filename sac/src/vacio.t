@@ -704,13 +704,14 @@ SUBROUTINE readfileini_bin(w)
   !-----------------------------------------------------------------------------
 
   oktest=INDEX(teststr,'readfileini')>=1
-
+  oktest=.TRUE.
   IF(oktest) WRITE(unitterm,*)'ReadFileIni'
+  WRITE(unitterm,*)'Filename: ', TRIM(filenameini)
 
   INQUIRE(file=filenameini,exist=fileexist)
   IF(.NOT.fileexist) CALL die('Stop: file does not exist, filenameini='//&
        filenameini)
-  OPEN(unitini,file=filenameini,status='old',form='unformatted')
+  OPEN(unitini,file=TRIM(filenameini),status='old',form='unformatted')
 
   snapshot=0
   DO
@@ -722,6 +723,7 @@ SUBROUTINE readfileini_bin(w)
           "('it=',i7,' t=',g10.3,' ndim=',i3,' neqpar=',i3,' nw=',i3)")&
           it,t,ndimini,neqparini,nwini
      gencoord= ndimini<0
+     WRITE(unitterm,*) 'paras', ios
      CALL checkNdimNeqparNw(ndimini,neqparini,nwini,neqparin,nwin)
      READ(unitini,iostat=ios)nx
      IF(oktest) WRITE(unitterm,"('nx =',3i4)")nx
@@ -729,10 +731,11 @@ SUBROUTINE readfileini_bin(w)
      READ(unitini,iostat=ios)(eqpar(ieqpar),ieqpar=1,neqparin),&
           (eqparextra,ieqpar=neqparin+1,neqparini)
      IF(oktest) WRITE(unitterm,*)eqpar
+     WRITE(unitterm,*) 'eqpar', ios
      READ(unitini,iostat=ios)varnamesini
      IF(varnames=='default')varnames=varnamesini
      IF(oktest) WRITE(unitterm,*)varnames
-
+     WRITE(unitterm,*) 'varnames', ios
      READ(unitini,iostat=ios)(x(ix^S,idim),idim=1,ndim)
      ! To conform savefileout_bin we use loop for iw
      DO iw=1,nwin
