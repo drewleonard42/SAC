@@ -1,68 +1,68 @@
 !==============================================================================
-SUBROUTINE addsource_visc(qdt,ixI^L,ixO^L,iws,qtC,w,qt,wnew)
+subroutine addsource_visc(qdt,ixI^L,ixO^L,iws,qtC,w,qt,wnew)
 
   ! Add viscosity source to wnew within ixO 
 
-  USE constants
-  USE common_varibles
+  use constants
+  use common_varibles
 
-  INTEGER::          ixI^L,ixO^L,iws(niw_)
-  DOUBLE PRECISION:: qdt,qtC,qt,w(ixG^T,nw),wnew(ixG^T,nw)
+  integer::          ixI^L,ixO^L,iws(niw_)
+  double precision:: qdt,qtC,qt,w(ixG^T,nw),wnew(ixG^T,nw)
 
-  INTEGER:: ix,ix^L,idim,idir,jdir,iiw,iw
+  integer:: ix,ix^L,idim,idir,jdir,iiw,iw
 
   !already declared in vacusr.f
   !double precision:: tmp2(ixG^T)
-  DOUBLE PRECISION:: nushk(ixG^T,ndim)
+  double precision:: nushk(ixG^T,ndim)
 
 
 
-  DOUBLE PRECISION:: tmprhoL(ixG^T), tmprhoR(ixG^T), tmprhoC(ixG^T)
-  DOUBLE PRECISION:: tmpVL(ixG^T), tmpVR(ixG^T), tmpVC(ixG^T)
-  DOUBLE PRECISION:: tmpBL(ixG^T), tmpBR(ixG^T), tmpBC(ixG^T)
+  double precision:: tmprhoL(ixG^T), tmprhoR(ixG^T), tmprhoC(ixG^T)
+  double precision:: tmpVL(ixG^T), tmpVR(ixG^T), tmpVC(ixG^T)
+  double precision:: tmpBL(ixG^T), tmpBR(ixG^T), tmpBC(ixG^T)
 
-  DOUBLE PRECISION:: tmpL(ixG^T),tmpR(ixG^T), tmpC(ixG^T)
+  double precision:: tmpL(ixG^T),tmpR(ixG^T), tmpC(ixG^T)
 
-  DOUBLE PRECISION:: nuL(ixG^T),nuR(ixG^T)
+  double precision:: nuL(ixG^T),nuR(ixG^T)
 
-  INTEGER:: jx^L,hx^L, hxO^L
+  integer:: jx^L,hx^L, hxO^L
 
-  DOUBLE PRECISION:: c_ene,c_shk
+  double precision:: c_ene,c_shk
 
-  INTEGER:: i,j,k,l,m,ii0,ii1,t00
+  integer:: i,j,k,l,m,ii0,ii1,t00
 
-  DOUBLE PRECISION:: sB
+  double precision:: sB
 
   !-----------------------------------------------------------------------------
 
   ! Calculating viscosity sources 
   ! involves second derivatives, two extra layers
-  CALL ensurebound(2,ixI^L,ixO^L,qtC,w)
+  call ensurebound(2,ixI^L,ixO^L,qtC,w)
   ix^L=ixO^L^LADD1;
 
   !sehr wichtig
-  CALL setnushk(w,ix^L,nushk)
+  call setnushk(w,ix^L,nushk)
 
-  DO idim=1,ndim
+  do idim=1,ndim
      tmp(ixI^S)=w(ixI^S,rho_)
-     CALL setnu(w,rho_,idim,ixO^L,nuR,nuL)      
-     CALL gradient1L(tmp,ix^L,idim,tmp2)
+     call setnu(w,rho_,idim,ixO^L,nuR,nuL)      
+     call gradient1L(tmp,ix^L,idim,tmp2)
      tmpL(ixI^S)=(nuL(ixI^S)+nushk(ixI^S,idim))*tmp2(ixI^S)	     
-     CALL gradient1R(tmp,ix^L,idim,tmp2)
+     call gradient1R(tmp,ix^L,idim,tmp2)
      tmpR(ixI^S)=(nuR(ixI^S)+nushk(ixI^S,idim))*tmp2(ixI^S)
      wnew(ixI^S,rho_)=wnew(ixI^S,rho_)+(tmpR(ixI^S)-tmpL(ixI^S))/dx(ixI^S,idim)*qdt
-  ENDDO
+  enddo
 
 
-  DO idim=1,ndim
+  do idim=1,ndim
      tmp(ixI^S)=w(ixI^S,e_)-half*((^C&w(ixI^S,b^C_)**2+)+(^C&w(ixI^S,m^C_)**2+)/(w(ixI^S,rho_)+w(ixI^S,rhob_)))
-     CALL setnu(w,173,idim,ixO^L,nuR,nuL)      
-     CALL gradient1L(tmp,ix^L,idim,tmp2)
+     call setnu(w,173,idim,ixO^L,nuR,nuL)      
+     call gradient1L(tmp,ix^L,idim,tmp2)
      tmpL(ixI^S)=(nuL(ixI^S)+nushk(ixI^S,idim))*tmp2(ixI^S)      
-     CALL gradient1R(tmp,ix^L,idim,tmp2)
+     call gradient1R(tmp,ix^L,idim,tmp2)
      tmpR(ixI^S)=(nuR(ixI^S)+nushk(ixI^S,idim))*tmp2(ixI^S)
      wnew(ixI^S,e_)=wnew(ixI^S,e_)+(tmpR(ixI^S)-tmpL(ixI^S))/dx(ixI^S,idim)*qdt
-  ENDDO
+  enddo
 
 
 
@@ -71,35 +71,35 @@ SUBROUTINE addsource_visc(qdt,ixI^L,ixO^L,iws,qtC,w,qt,wnew)
 
 
 
-  DO k=1,ndim
+  do k=1,ndim
      jx^L=ix^L+kr(k,^D); 
      hx^L=ix^L-kr(k,^D);
      tmprhoL(ix^S)=((w(ix^S,rho_)+w(ix^S,rhob_))+(w(hx^S,rho_)+w(hx^S,rhob_)))/two
      tmprhoR(ix^S)=((w(jx^S,rho_)+w(jx^S,rhob_))+(w(ix^S,rho_)+w(ix^S,rhob_)))/two
 
-     DO l=1,ndim
-	CALL setnu(w,l+m0_,k,ixO^L,nuR,nuL)      
+     do l=1,ndim
+	call setnu(w,l+m0_,k,ixO^L,nuR,nuL)      
 	tmp(ixI^S)=w(ixI^S,m0_+l)/(w(ixI^S,rho_)+w(ixI^S,rhob_))
 
 
-        DO ii1=0,1
-           IF (ii1 .EQ. 0) THEN
+        do ii1=0,1
+           if (ii1 .eq. 0) then
               i=k
               ii0=l
-           ELSE
+           else
               i=l
               ii0=k
-           ENDIF
+           endif
 
 
 
-           IF (i .EQ. k) THEN 
+           if (i .eq. k) then 
               tmpVL(ix^S)=(w(ix^S,m0_+ii0)+w(hx^S,m0_+ii0))/two
               tmpVR(ix^S)=(w(jx^S,m0_+ii0)+w(ix^S,m0_+ii0))/two
 
-              CALL gradient1L(tmp,ix^L,k,tmp2)
+              call gradient1L(tmp,ix^L,k,tmp2)
               tmpL(ixI^S)=(nuL(ixI^S)+nushk(ixI^S,k))*tmp2(ixI^S)
-              CALL gradient1R(tmp,ix^L,k,tmp2)
+              call gradient1R(tmp,ix^L,k,tmp2)
               tmpR(ixI^S)=(nuR(ixI^S)+nushk(ixI^S,k))*tmp2(ixI^S) 
 
               tmp2(ixI^S)=(tmprhoR(ixI^S)*tmpR(ixI^S)-tmprhoL(ixI^S)*tmpL(ixI^S))/dx(ixI^S,k)/two
@@ -109,56 +109,56 @@ SUBROUTINE addsource_visc(qdt,ixI^L,ixO^L,iws,qtC,w,qt,wnew)
               tmp2(ixI^S)=(tmpVR(ixI^S)*tmpR(ixI^S)-tmpVL(ixI^S)*tmpL(ixI^S))/dx(ixI^S,k)/two
 
               wnew(ixI^S,e_)=wnew(ixI^S,e_)+tmp2(ixI^S)*qdt
-           ENDIF
+           endif
 
 
 
 
-           IF (i .NE. k) THEN
-              CALL gradient1(tmp,ix^L,k,tmp2)
+           if (i .ne. k) then
+              call gradient1(tmp,ix^L,k,tmp2)
               tmp2(ixI^S)=tmp2(ixI^S)*(nuL(ixI^S)+nuR(ixI^S)+two*nushk(ixI^S,k))/two/two
 
               tmp(ixI^S)=tmprhoC(ixI^S)*tmp2(ixI^S)
-              CALL gradient1(tmp,ix^L,i,tmpC)
+              call gradient1(tmp,ix^L,i,tmpC)
 
               wnew(ixI^S,m0_+ii0)=wnew(ixI^S,m0_+ii0)+tmpC(ixI^S)*qdt
 
               tmp(ixI^S)=w(ixI^S,m0_+ii0)*tmp2(ixI^S)
-              CALL gradient1(tmp,ix^L,i,tmpC)
+              call gradient1(tmp,ix^L,i,tmpC)
 
               wnew(ixI^S,e_)=wnew(ixI^S,e_)+tmpC(ixI^S)*qdt
-           ENDIF
+           endif
 
-        ENDDO
-     ENDDO
-  ENDDO
-
-
+        enddo
+     enddo
+  enddo
 
 
 
-  DO k=1,ndim
-     DO l=1,ndim
 
-        IF (k .NE. l) THEN
 
-           CALL setnu(w,b0_+l,k,ixO^L,nuR,nuL)
+  do k=1,ndim
+     do l=1,ndim
 
-           DO ii1=0,1
+        if (k .ne. l) then
 
-              IF (ii1 .EQ. 0) THEN
+           call setnu(w,b0_+l,k,ixO^L,nuR,nuL)
+
+           do ii1=0,1
+
+              if (ii1 .eq. 0) then
                  ii0=k
                  m=l
                  sB=-1.d0
                  j=k
-              ENDIF
+              endif
 
-              IF (ii1 .EQ. 1) THEN 
+              if (ii1 .eq. 1) then 
                  ii0=l    !ii0 is index B
                  m=k      !first derivative
                  sB=1.d0  !sign B
                  j=l      !first B in energy
-              ENDIF
+              endif
 
 
 
@@ -166,7 +166,7 @@ SUBROUTINE addsource_visc(qdt,ixI^L,ixO^L,iws,qtC,w,qt,wnew)
 
 
 
-              IF (m .EQ. k) THEN
+              if (m .eq. k) then
 
                  jx^L=ix^L+kr(m,^D); 
                  hx^L=ix^L-kr(m,^D);
@@ -175,9 +175,9 @@ SUBROUTINE addsource_visc(qdt,ixI^L,ixO^L,iws,qtC,w,qt,wnew)
 
                  tmp(ixI^S)=w(ixI^S,b0_+l)
 
-                 CALL gradient1L(tmp,ix^L,k,tmp2)
+                 call gradient1L(tmp,ix^L,k,tmp2)
                  tmpL(ixI^S)=(nuL(ixI^S))*tmp2(ixI^S)
-                 CALL gradient1R(tmp,ix^L,k,tmp2)
+                 call gradient1R(tmp,ix^L,k,tmp2)
                  tmpR(ixI^S)=(nuR(ixI^S))*tmp2(ixI^S) 
 
                  wnew(ixI^S,b0_+ii0)=wnew(ixI^S,b0_+ii0)+sB*(tmpR(ixI^S)-tmpL(ixI^S))/dx(ixI^S,k)*qdt
@@ -185,99 +185,99 @@ SUBROUTINE addsource_visc(qdt,ixI^L,ixO^L,iws,qtC,w,qt,wnew)
                  wnew(ixI^S,e_)=wnew(ixI^S,e_)+sB*(tmpR(ixI^S)*tmpBR(ixI^S)-tmpL(ixI^S)*tmpBL(ixI^S))/dx(ixI^S,k)*qdt
 
 
-              ENDIF
+              endif
 
 
 
-              IF (m .NE. k) THEN
+              if (m .ne. k) then
 
                  tmp(ixI^S)=w(ixI^S,b0_+l)
 
-                 CALL gradient1(tmp,ix^L,k,tmp2)
+                 call gradient1(tmp,ix^L,k,tmp2)
 
                  tmp2(ixI^S)=tmp2(ixI^S)*(nuL(ixI^S)+nuR(ixI^S))/two
 
-                 CALL gradient1(tmp2,ix^L,m,tmpC)
+                 call gradient1(tmp2,ix^L,m,tmpC)
 
                  wnew(ixI^S,b0_+ii0)=wnew(ixI^S,b0_+ii0)+sB*tmpC(ixI^S)*qdt
 
                  tmp2(ixI^S)=tmp2(ixI^S)*w(ixI^S,b0_+j)
 
-                 CALL gradient1(tmp2,ix^L,m,tmpC)
+                 call gradient1(tmp2,ix^L,m,tmpC)
 
                  wnew(ixI^S,e_)=wnew(ixI^S,e_)+sB*tmpC(ixI^S)*qdt
 
-              ENDIF
+              endif
 
 
-           ENDDO
-        ENDIF
-     ENDDO
-  ENDDO
+           enddo
+        endif
+     enddo
+  enddo
 
 
 
 
-  RETURN
-END SUBROUTINE addsource_visc
+  return
+end subroutine addsource_visc
 
 !=============================================================================
-SUBROUTINE setnu(w,iw,idim,ix^L,nuR,nuL)
+subroutine setnu(w,iw,idim,ix^L,nuR,nuL)
 
   ! Set the viscosity coefficient nu within ixO based on w(ixI). 
 
-  USE constants
-  USE common_varibles
+  use constants
+  use common_varibles
 
-  INTEGER:: ixi^L
-  DOUBLE PRECISION:: w(ixG^T,nw)
-  DOUBLE PRECISION:: d1R(^SIDEADO),d1L(^SIDEADO)
-  DOUBLE PRECISION:: d3R(^SIDEADO),d3L(^SIDEADO)
-  DOUBLE PRECISION:: md3R(ixG^T),md3L(ixG^T)
-  DOUBLE PRECISION:: md1R(ixG^T),md1L(ixG^T)
-  DOUBLE PRECISION:: nuR(ixG^T),nuL(ixG^T)
+  integer:: ixi^L
+  double precision:: w(ixG^T,nw)
+  double precision:: d1R(^SIDEADO),d1L(^SIDEADO)
+  double precision:: d3R(^SIDEADO),d3L(^SIDEADO)
+  double precision:: md3R(ixG^T),md3L(ixG^T)
+  double precision:: md1R(ixG^T),md1L(ixG^T)
+  double precision:: nuR(ixG^T),nuL(ixG^T)
 
-  DOUBLE PRECISION:: c_tot, c_hyp,cmax(ixG^T), tmp_nu(ixG^T)
-  INTEGER:: ix^L,idim, iw
-  INTEGER:: kx^L,jx^L,hx^L,gx^L,ixFF^L,jxFF^L,hxFF^L
-  INTEGER:: ix_1,ix_2,ix_3
+  double precision:: c_tot, c_hyp,cmax(ixG^T), tmp_nu(ixG^T)
+  integer:: ix^L,idim, iw
+  integer:: kx^L,jx^L,hx^L,gx^L,ixFF^L,jxFF^L,hxFF^L
+  integer:: ix_1,ix_2,ix_3
 
-  INTEGER:: ixF^LL,ixF^L,ixY^LL
+  integer:: ixF^LL,ixF^L,ixY^LL
 
-  LOGICAL:: new_cmax
+  logical:: new_cmax
 
-  DOUBLE PRECISION:: tmp_nuI(^SIDEADD)
+  double precision:: tmp_nuI(^SIDEADD)
 
-  INTEGER:: k,iwc
+  integer:: k,iwc
 
-  INTEGER:: ix,ixe
+  integer:: ix,ixe
 
   {^IFMPI 
 
-  INTEGER :: nmpirequest, mpirequests(2)
-  INTEGER :: mpistatus(MPI_STATUS_SIZE,2)
-  COMMON /mpirecv/ nmpirequest,mpirequests,mpistatus
+  integer :: nmpirequest, mpirequests(2)
+  integer :: mpistatus(MPI_STATUS_SIZE,2)
+  common /mpirecv/ nmpirequest,mpirequests,mpistatus
 
 
-  INTEGER:: hpe,jpe
+  integer:: hpe,jpe
 
-  DOUBLE PRECISION:: tgtbufferR^D(1^D%^LM)
-  DOUBLE PRECISION:: tgtbufferL^D(1^D%^LM)
-  DOUBLE PRECISION:: srcbufferR^D(1^D%^LM)
-  DOUBLE PRECISION:: srcbufferL^D(1^D%^LM)
+  double precision:: tgtbufferR^D(1^D%^LM)
+  double precision:: tgtbufferL^D(1^D%^LM)
+  double precision:: srcbufferR^D(1^D%^LM)
+  double precision:: srcbufferL^D(1^D%^LM)
 
-  INTEGER:: n
+  integer:: n
 
   }
 
   !----------------------------------------------------------------------------
 
-  new_cmax=.TRUE.
+  new_cmax=.true.
 
-  CALL getcmax(new_cmax,w,ix^L,idim,cmax)
-  c_tot=MAXVAL(cmax(ix^S))
+  call getcmax(new_cmax,w,ix^L,idim,cmax)
+  c_tot=maxval(cmax(ix^S))
 
-  {^IFMPI CALL mpiallreduce(c_tot,MPI_MAX)}
+  {^IFMPI call mpiallreduce(c_tot,MPI_MAX)}
 
   !---------------------------------------------
   ! Set HyperVis coefficients here:
@@ -285,22 +285,22 @@ SUBROUTINE setnu(w,iw,idim,ix^L,nuR,nuL)
 
   c_hyp=0.4d0 ! 1.4d0 ! 0.6
 
-  IF (iw.EQ.b^D_|.OR.) c_hyp=0.04d0 ! 2d0
+  if (iw.eq.b^D_|.or.) c_hyp=0.04d0 ! 2d0
 
-  IF (iw .EQ. rho_) c_hyp=0.04d0 !5d0
+  if (iw .eq. rho_) c_hyp=0.04d0 !5d0
 
-  IF (iw .EQ. 173) c_hyp=0.04d0 !2d0
+  if (iw .eq. 173) c_hyp=0.04d0 !2d0
 
 
   !---------------------------------------------
 
 
-  IF (iw .NE. 173) THEN     
+  if (iw .ne. 173) then     
      tmp_nu(ixG^T)=w(ixG^T,iw)
-     IF (iw.EQ.m^D_|.OR.) tmp_nu(ixG^T)=w(ixG^T,iw)/(w(ixG^T,rho_)+w(ixG^T,rhob_))
-  ENDIF
+     if (iw.eq.m^D_|.or.) tmp_nu(ixG^T)=w(ixG^T,iw)/(w(ixG^T,rho_)+w(ixG^T,rhob_))
+  endif
 
-  IF (iw .EQ. 173) tmp_nu(ixG^T)=w(ixG^T,e_)-half*((^C&w(ixG^T,b^C_)**2+)+(^C&w(ixG^T,m^C_)**2+)/(w(ixG^T,rho_)+w(ixG^T,rhob_)))
+  if (iw .eq. 173) tmp_nu(ixG^T)=w(ixG^T,e_)-half*((^C&w(ixG^T,b^C_)**2+)+(^C&w(ixG^T,m^C_)**2+)/(w(ixG^T,rho_)+w(ixG^T,rhob_)))
 
 
   ixY^LL=ix^L^LADD2;
@@ -312,24 +312,24 @@ SUBROUTINE setnu(w,iw,idim,ix^L,nuR,nuL)
 
   {^IFMPI
 
-  CALL MPI_BARRIER(MPI_COMM_WORLD,ierrmpi)
+  call MPI_BARRIER(MPI_COMM_WORLD,ierrmpi)
 
   n = ^D&(ixFhi^D-ixFlo^D+1)*   
 
-  SELECT CASE(idim)
-     { CASE(^D)
+  select case(idim)
+     { case(^D)
 
      n=n/(ixFhi^D-ixFlo^D+1)
 
      }
-  END SELECT
+  end select
 
 
 
-  SELECT CASE(idim)
-     {   CASE(^D)
+  select case(idim)
+     {   case(^D)
 
-     IF(npe^D>1)THEN
+     if(npe^D>1)then
 
         nmpirequest =0
         mpirequests(1:2) = MPI_REQUEST_NULL
@@ -340,22 +340,22 @@ SUBROUTINE setnu(w,iw,idim,ix^L,nuR,nuL)
 
         srcbufferR^D(1^D%ixF^T)=tmp_nuI(ixFhi^D-4^D%ixF^T) !right, upper
 
-        CALL mpineighbors(^D,hpe,jpe)
+        call mpineighbors(^D,hpe,jpe)
 
         !Patched for intel compiler by Stuart Mumford July 2013 added (1^D%:^) which expands to (1,:,:) etc.
-        IF (mpiupperB(^D)) nmpirequest=nmpirequest+1
-        IF (mpiupperB(^D)) CALL MPI_IRECV(tgtbufferR^D(1^D%:^),n,MPI_DOUBLE_PRECISION, jpe,10*jpe+0,MPI_COMM_WORLD, mpirequests(nmpirequest),ierrmpi)
+        if (mpiupperB(^D)) nmpirequest=nmpirequest+1
+        if (mpiupperB(^D)) call MPI_IRECV(tgtbufferR^D(1^D%:^),n,MPI_DOUBLE_PRECISION, jpe,10*jpe+0,MPI_COMM_WORLD, mpirequests(nmpirequest),ierrmpi)
 
-        IF (mpilowerB(^D)) nmpirequest=nmpirequest+1
-        IF (mpilowerB(^D)) CALL MPI_IRECV(tgtbufferL^D(1^D%:^),n,MPI_DOUBLE_PRECISION, hpe,10*hpe+1,MPI_COMM_WORLD, mpirequests(nmpirequest),ierrmpi)
+        if (mpilowerB(^D)) nmpirequest=nmpirequest+1
+        if (mpilowerB(^D)) call MPI_IRECV(tgtbufferL^D(1^D%:^),n,MPI_DOUBLE_PRECISION, hpe,10*hpe+1,MPI_COMM_WORLD, mpirequests(nmpirequest),ierrmpi)
 
-        CALL MPI_BARRIER(MPI_COMM_WORLD,ierrmpi)
+        call MPI_BARRIER(MPI_COMM_WORLD,ierrmpi)
 
-        IF (mpiupperB(^D)) CALL MPI_RSEND(srcbufferR^D(1^D%:^),n,MPI_DOUBLE_PRECISION, jpe,10*ipe+1,MPI_COMM_WORLD,ierrmpi)
+        if (mpiupperB(^D)) call MPI_RSEND(srcbufferR^D(1^D%:^),n,MPI_DOUBLE_PRECISION, jpe,10*ipe+1,MPI_COMM_WORLD,ierrmpi)
 
-        IF (mpilowerB(^D)) CALL MPI_RSEND(srcbufferL^D(1^D%:^),n,MPI_DOUBLE_PRECISION, hpe,10*ipe+0,MPI_COMM_WORLD,ierrmpi)
+        if (mpilowerB(^D)) call MPI_RSEND(srcbufferL^D(1^D%:^),n,MPI_DOUBLE_PRECISION, hpe,10*ipe+0,MPI_COMM_WORLD,ierrmpi)
 
-        CALL MPI_WAITALL(nmpirequest,mpirequests,mpistatus,ierrmpi)
+        call MPI_WAITALL(nmpirequest,mpirequests,mpistatus,ierrmpi)
 
         !target
         tmp_nuI(ixFhi^D+1^D%ixF^T)=tgtbufferR^D(1^D%ixF^T) !right, upper R
@@ -363,43 +363,43 @@ SUBROUTINE setnu(w,iw,idim,ix^L,nuR,nuL)
         tmp_nuI(ixFlo^D-1^D%ixF^T)=tgtbufferL^D(1^D%ixF^T) !left, lower  L
 
 
-     ENDIF
+     endif
      }
-  END SELECT
+  end select
 
-  CALL MPI_BARRIER(MPI_COMM_WORLD,ierrmpi)
+  call MPI_BARRIER(MPI_COMM_WORLD,ierrmpi)
   }
 
 
-  IF (iw .EQ. 173) THEN 
+  if (iw .eq. 173) then 
      iwc=e_ 
-  ELSE 
+  else 
      iwc=iw
-  ENDIF
+  endif
 
-  DO k=0,1  !left-right bc
+  do k=0,1  !left-right bc
 
-     IF (typeB(iwc,2*idim-1+k) .NE. 'mpi') THEN
-        IF (upperB(2*idim-1+k)) THEN
+     if (typeB(iwc,2*idim-1+k) .ne. 'mpi') then
+        if (upperB(2*idim-1+k)) then
 
-           SELECT CASE(idim)
-              {   CASE(^D)
+           select case(idim)
+              {   case(^D)
               tmp_nuI(ixFhi^D+1^D%ixF^T)=tmp_nuI(ixFhi^D-5^D%ixF^T)
               }
-           END SELECT
+           end select
 
-        ELSE
+        else
 
-           SELECT CASE(idim)
-              {   CASE(^D)
+           select case(idim)
+              {   case(^D)
               tmp_nuI(ixFlo^D-1^D%ixF^T)=tmp_nuI(ixFlo^D+5^D%ixF^T)
               }
-           END SELECT
+           end select
 
-        ENDIF
-     ENDIF
+        endif
+     endif
 
-  ENDDO
+  enddo
 
   ixF^L=ixF^LL^LSUB1; 
 
@@ -412,72 +412,72 @@ SUBROUTINE setnu(w,iw,idim,ix^L,nuR,nuL)
   jxFF^L=ixF^LL+kr(idim,^D);  !3:66
   hxFF^L=ixF^LL-kr(idim,^D);  !1:64
 
-  d3R(ixF^S)=ABS(3.d0*(tmp_nuI(jx^S)-tmp_nuI(ixF^S))-(tmp_nuI(kx^S)-tmp_nuI(hx^S))) !3:64
-  d1R(ixFF^S)=ABS(tmp_nuI(jxFF^S)-tmp_nuI(ixFF^S)) !2:65
+  d3R(ixF^S)=abs(3.d0*(tmp_nuI(jx^S)-tmp_nuI(ixF^S))-(tmp_nuI(kx^S)-tmp_nuI(hx^S))) !3:64
+  d1R(ixFF^S)=abs(tmp_nuI(jxFF^S)-tmp_nuI(ixFF^S)) !2:65
 
-  {DO ix_^D=ixmin^D,ixmax^D\}    !3:62  +1=4:63
+  {do ix_^D=ixmin^D,ixmax^D\}    !3:62  +1=4:63
 
-  md3R(ix_^D)=MAXVAL(d3R(ix_^D+1-kr(idim,^D):ix_^D+1+kr(idim,^D)))
-  md1R(ix_^D)=MAXVAL(d1R(ix_^D+1-2*kr(idim,^D):ix_^D+1+2*kr(idim,^D)))
+  md3R(ix_^D)=maxval(d3R(ix_^D+1-kr(idim,^D):ix_^D+1+kr(idim,^D)))
+  md1R(ix_^D)=maxval(d1R(ix_^D+1-2*kr(idim,^D):ix_^D+1+2*kr(idim,^D)))
 
-  {ENDDO\}
+  {enddo\}
 
-  WHERE (md1R(ix^S).GT.0.d0)
+  where (md1R(ix^S).gt.0.d0)
      nuR(ix^S)=c_tot*c_hyp*md3R(ix^S)/md1R(ix^S)*dx(ix^S,idim)
-  ELSEWHERE 
+  elsewhere 
      nuR(ix^S)=0.d0
-  END WHERE
+  end where
 
-  maxviscoef=MAX(MAXVAL(nuR(ix^S)), maxviscoef)
+  maxviscoef=max(maxval(nuR(ix^S)), maxviscoef)
 
 
   !************
 
-  d3L(ixF^S)=ABS(3.d0*(tmp_nuI(ixF^S)-tmp_nuI(hx^S))-(tmp_nuI(jx^S)-tmp_nuI(gx^S)))
-  d1L(ixFF^S)=ABS(tmp_nuI(ixFF^S)-tmp_nuI(hxFF^S))    
+  d3L(ixF^S)=abs(3.d0*(tmp_nuI(ixF^S)-tmp_nuI(hx^S))-(tmp_nuI(jx^S)-tmp_nuI(gx^S)))
+  d1L(ixFF^S)=abs(tmp_nuI(ixFF^S)-tmp_nuI(hxFF^S))    
 
-  {DO ix_^D=ixmin^D,ixmax^D\}
+  {do ix_^D=ixmin^D,ixmax^D\}
 
-  md3L(ix_^D)=MAXVAL(d3L(ix_^D+1-kr(idim,^D):ix_^D+1+kr(idim,^D)))
-  md1L(ix_^D)=MAXVAL(d1L(ix_^D+1-2*kr(idim,^D):ix_^D+1+2*kr(idim,^D)))
+  md3L(ix_^D)=maxval(d3L(ix_^D+1-kr(idim,^D):ix_^D+1+kr(idim,^D)))
+  md1L(ix_^D)=maxval(d1L(ix_^D+1-2*kr(idim,^D):ix_^D+1+2*kr(idim,^D)))
 
-  {ENDDO\}
+  {enddo\}
 
-  WHERE (md1L(ix^S).GT.0.d0)
+  where (md1L(ix^S).gt.0.d0)
      nuL(ix^S)=c_tot*c_hyp*md3L(ix^S)/md1L(ix^S)*dx(ix^S,idim)
-  ELSEWHERE 
+  elsewhere 
      nuL(ix^S)=0.d0  
-  END WHERE
+  end where
 
-  maxviscoef=MAX(MAXVAL(nuL(ix^S)), maxviscoef)
+  maxviscoef=max(maxval(nuL(ix^S)), maxviscoef)
 
-  {^IFMPI CALL mpiallreduce(maxviscoef,MPI_MAX)}
+  {^IFMPI call mpiallreduce(maxviscoef,MPI_MAX)}
 
-  RETURN
-END SUBROUTINE setnu
+  return
+end subroutine setnu
 
 
 !=============================================================================
 !=============================================================================
-SUBROUTINE setnushk(w,ix^L,nushk)
+subroutine setnushk(w,ix^L,nushk)
 
-  USE constants
-  USE common_varibles
+  use constants
+  use common_varibles
 
   !double precision:: w(ixG^T,nw),tmp2(ixG^T),nushk(ixG^T,ndim)
-  DOUBLE PRECISION:: w(ixG^T,nw),nushk(ixG^T,ndim)
+  double precision:: w(ixG^T,nw),nushk(ixG^T,ndim)
 
-  DOUBLE PRECISION:: c_shk
+  double precision:: c_shk
 
-  DOUBLE PRECISION:: tmp3(ixG^T)
+  double precision:: tmp3(ixG^T)
 
-  INTEGER:: ix^L,idim, iw,i
+  integer:: ix^L,idim, iw,i
 
-  INTEGER:: ix_1,ix_2
+  integer:: ix_1,ix_2
 
-  DO idim=1,ndim
+  do idim=1,ndim
      nushk(ix^S,idim)=0.d0
-  ENDDO
+  enddo
 
 
   !--------------------------------------------------
@@ -503,58 +503,58 @@ SUBROUTINE setnushk(w,ix^L,nushk)
 !!$!****************************END shock viscosity*******************************
 
 
-  RETURN
-END SUBROUTINE setnushk
+  return
+end subroutine setnushk
 
 
 
 !=============================================================================
-SUBROUTINE getdt_visc(w,ix^L)
+subroutine getdt_visc(w,ix^L)
 
   ! Check diffusion time limit for dt < dtdiffpar * dx**2 / (nu/rho)
 
   ! Based on Hirsch volume 2, p.631, eq.23.2.17
 
-  USE constants
-  USE common_varibles
+  use constants
+  use common_varibles
 
-  DOUBLE PRECISION:: w(ixG^T,nw),dtdiff_visc
-  INTEGER:: ix^L,idim, ix_1,ix_2
+  double precision:: w(ixG^T,nw),dtdiff_visc
+  integer:: ix^L,idim, ix_1,ix_2
 
-  INTEGER:: aa
+  integer:: aa
 
   ! For spatially varying nu you need a common nu array
-  DOUBLE PRECISION::tmpdt(ixG^T), nuL(ixG^T),nuR(ixG^T), nushk(ixG^T,ndim)
-  COMMON/visc/nuL
-  COMMON/visc/nuR
+  double precision::tmpdt(ixG^T), nuL(ixG^T),nuR(ixG^T), nushk(ixG^T,ndim)
+  common/visc/nuL
+  common/visc/nuR
   !-----------------------------------------------------------------------------
 
-  CALL setnushk(w,ix^L,nushk)
+  call setnushk(w,ix^L,nushk)
 
   dtdiffpar=0.25d0
 
-  DO idim=1,ndim
+  do idim=1,ndim
      tmpdt(ix^S)=(maxviscoef+nushk(ix^S,idim))       !/(w(ix^S,rho_)+w(ix^S,rhob_))   ! ~1/dt
-     dtdiff_visc=dtdiffpar/MAXVAL(tmpdt(ix^S)/(dx(ix^S,idim)**2))
-     {^IFMPI CALL mpiallreduce(dtdiff_visc,MPI_MIN)}
-     dt=MIN(dt,dtdiff_visc)
-  END DO
+     dtdiff_visc=dtdiffpar/maxval(tmpdt(ix^S)/(dx(ix^S,idim)**2))
+     {^IFMPI call mpiallreduce(dtdiff_visc,MPI_MIN)}
+     dt=min(dt,dtdiff_visc)
+  end do
 
   maxviscoef=0.d0
 
-  RETURN
-END SUBROUTINE getdt_visc
+  return
+end subroutine getdt_visc
 
 
 !***** 2-point central finite difference gradient******
 
-SUBROUTINE gradient1(q,ix^L,idim,gradq)
-  USE constants
-  USE common_varibles
-  INTEGER:: ix^L,idim
-  DOUBLE PRECISION:: q(ixG^T),gradq(ixG^T)
-  INTEGER:: hx^L,kx^L
-  INTEGER:: minx1^D,maxx1^D,k
+subroutine gradient1(q,ix^L,idim,gradq)
+  use constants
+  use common_varibles
+  integer:: ix^L,idim
+  double precision:: q(ixG^T),gradq(ixG^T)
+  integer:: hx^L,kx^L
+  integer:: minx1^D,maxx1^D,k
   !-----------------------------------------------------------------------------
 
   hx^L=ix^L-kr(idim,^D);
@@ -564,44 +564,44 @@ SUBROUTINE gradient1(q,ix^L,idim,gradq)
   minx1^D=ixmin^D+kr(idim,^D);
   maxx1^D=ixmax^D-kr(idim,^D);
 
-  DO k=0,1  !left-right bc
-     IF (typeB(1,2*idim-1+k) .NE. 'periodic') THEN
-        IF (typeB(1,2*idim-1+k) .NE. 'mpi') THEN
-           IF (upperB(2*idim-1+k)) THEN
-              SELECT CASE(idim)
-                 {   CASE(^D)
+  do k=0,1  !left-right bc
+     if (typeB(1,2*idim-1+k) .ne. 'periodic') then
+        if (typeB(1,2*idim-1+k) .ne. 'mpi') then
+           if (upperB(2*idim-1+k)) then
+              select case(idim)
+                 {   case(^D)
                  gradq(ixmax^D^D%ix^S)=0.d0
                  gradq(maxx1^D^D%ix^S)=0.d0
                  }
-              END SELECT
-           ELSE
-              SELECT CASE(idim)
-                 {   CASE(^D)
+              end select
+           else
+              select case(idim)
+                 {   case(^D)
                  gradq(ixmin^D^D%ix^S)=0.d0
                  gradq(minx1^D^D%ix^S)=0.d0
                  }
-              END SELECT
-           ENDIF
-        ENDIF
-     ENDIF
-  ENDDO
+              end select
+           endif
+        endif
+     endif
+  enddo
 
 
-  RETURN
-END SUBROUTINE gradient1
+  return
+end subroutine gradient1
 
 !=============================================================================
 
 
 !*****left upwind forward 2-point non-central finite difference gradient******
 
-SUBROUTINE gradient1L(q,ix^L,idim,gradq)
-  USE constants
-  USE common_varibles
-  INTEGER:: ix^L,idim
-  DOUBLE PRECISION:: q(ixG^T),gradq(ixG^T)
-  INTEGER:: hx^L
-  INTEGER:: minx1^D,maxx1^D,k
+subroutine gradient1L(q,ix^L,idim,gradq)
+  use constants
+  use common_varibles
+  integer:: ix^L,idim
+  double precision:: q(ixG^T),gradq(ixG^T)
+  integer:: hx^L
+  integer:: minx1^D,maxx1^D,k
   !-----------------------------------------------------------------------------
 
   hx^L=ix^L-kr(idim,^D);
@@ -610,43 +610,43 @@ SUBROUTINE gradient1L(q,ix^L,idim,gradq)
   minx1^D=ixmin^D+kr(idim,^D);
   maxx1^D=ixmax^D-kr(idim,^D);
 
-  DO k=0,1  !left-right bc
-     IF (typeB(1,2*idim-1+k) .NE. 'periodic') THEN
-        IF (typeB(1,2*idim-1+k) .NE. 'mpi') THEN
-           IF (upperB(2*idim-1+k)) THEN
-              SELECT CASE(idim)
-                 {   CASE(^D)
+  do k=0,1  !left-right bc
+     if (typeB(1,2*idim-1+k) .ne. 'periodic') then
+        if (typeB(1,2*idim-1+k) .ne. 'mpi') then
+           if (upperB(2*idim-1+k)) then
+              select case(idim)
+                 {   case(^D)
                  gradq(ixmax^D^D%ix^S)=0.d0
                  gradq(maxx1^D^D%ix^S)=0.d0
                  }
-              END SELECT
-           ELSE
-              SELECT CASE(idim)
-                 {   CASE(^D)
+              end select
+           else
+              select case(idim)
+                 {   case(^D)
                  gradq(ixmin^D^D%ix^S)=0.d0
                  gradq(minx1^D^D%ix^S)=0.d0
                  }
-              END SELECT
-           ENDIF
-        ENDIF
-     ENDIF
-  ENDDO
+              end select
+           endif
+        endif
+     endif
+  enddo
 
 
-  RETURN
-END SUBROUTINE gradient1L
+  return
+end subroutine gradient1L
 
 !=============================================================================
 
 !*****right upwind forward 2-point non-central finite difference gradient*****
 
-SUBROUTINE gradient1R(q,ix^L,idim,gradq)
-  USE constants
-  USE common_varibles
-  INTEGER:: ix^L,idim
-  DOUBLE PRECISION:: q(ixG^T),gradq(ixG^T)
-  INTEGER:: hx^L
-  INTEGER:: minx1^D,maxx1^D,k
+subroutine gradient1R(q,ix^L,idim,gradq)
+  use constants
+  use common_varibles
+  integer:: ix^L,idim
+  double precision:: q(ixG^T),gradq(ixG^T)
+  integer:: hx^L
+  integer:: minx1^D,maxx1^D,k
   !-----------------------------------------------------------------------------
 
   hx^L=ix^L+kr(idim,^D);
@@ -655,28 +655,28 @@ SUBROUTINE gradient1R(q,ix^L,idim,gradq)
   minx1^D=ixmin^D+kr(idim,^D);
   maxx1^D=ixmax^D-kr(idim,^D);
 
-  DO k=0,1  !left-right bc
-     IF (typeB(1,2*idim-1+k) .NE. 'periodic') THEN
-        IF (typeB(1,2*idim-1+k) .NE. 'mpi') THEN
-           IF (upperB(2*idim-1+k)) THEN
-              SELECT CASE(idim)
-                 {   CASE(^D)
+  do k=0,1  !left-right bc
+     if (typeB(1,2*idim-1+k) .ne. 'periodic') then
+        if (typeB(1,2*idim-1+k) .ne. 'mpi') then
+           if (upperB(2*idim-1+k)) then
+              select case(idim)
+                 {   case(^D)
                  gradq(ixmax^D^D%ix^S)=0.d0
                  gradq(maxx1^D^D%ix^S)=0.d0
                  }
-              END SELECT
-           ELSE
-              SELECT CASE(idim)
-                 {   CASE(^D)
+              end select
+           else
+              select case(idim)
+                 {   case(^D)
                  gradq(ixmin^D^D%ix^S)=0.d0
                  gradq(minx1^D^D%ix^S)=0.d0
                  }
-              END SELECT
-           ENDIF
-        ENDIF
-     ENDIF
-  ENDDO
+              end select
+           endif
+        endif
+     endif
+  enddo
 
 
-  RETURN
-END SUBROUTINE gradient1R
+  return
+end subroutine gradient1R

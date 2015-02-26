@@ -21,17 +21,17 @@
 !    The setgrav subroutine has to be completed then.
 !
 !============================================================================
-SUBROUTINE addsource_grav(qdt,ixI^L,ixO^L,iws,qtC,w,qt,wnew)
+subroutine addsource_grav(qdt,ixI^L,ixO^L,iws,qtC,w,qt,wnew)
 
   ! Add gravity source calculated from w to wnew within ixO for all variables 
   ! in iws. w is at time qtC, wnew is advanced from qt to qt+qdt.
 
-  USE constants
-  USE common_varibles
+  use constants
+  use common_varibles
 
-  INTEGER::          ixI^L,ixO^L,iws(niw_)
-  DOUBLE PRECISION:: qdt,qtC,qt,w(ixG^T,nw),wnew(ixG^T,nw)
-  INTEGER:: iiw,iw,idim
+  integer::          ixI^L,ixO^L,iws(niw_)
+  double precision:: qdt,qtC,qt,w(ixG^T,nw),wnew(ixG^T,nw)
+  integer:: iiw,iw,idim
 !!! ! For a spatially varying gravity define the common grav array
 !!! double precision:: grav(ixG^T,ndim)
 !!! common /gravity/ grav
@@ -44,12 +44,12 @@ SUBROUTINE addsource_grav(qdt,ixI^L,ixO^L,iws,qtC,w,qt,wnew)
 !!! call setgrav(w,ixI^L,ixO^L,grav)
 
   ! add sources from gravity
-  DO iiw=1,iws(niw_); iw=iws(iiw)
-     SELECT CASE(iw)
-     CASE(m^D_)
+  do iiw=1,iws(niw_); iw=iws(iiw)
+     select case(iw)
+     case(m^D_)
         ! dm_i/dt= +rho*g_i
         idim=iw-m0_
-        IF(ABS(eqpar(grav0_+idim))>smalldouble) &
+        if(abs(eqpar(grav0_+idim))>smalldouble) &
              wnew(ixO^S,m0_+idim)=wnew(ixO^S,m0_+idim)+ &
              qdt*eqpar(grav0_+idim)*(w(ixO^S,rho_))
 
@@ -60,10 +60,10 @@ SUBROUTINE addsource_grav(qdt,ixI^L,ixO^L,iws,qtC,w,qt,wnew)
 !!! wnew(ixO^S,m0_+idim)=wnew(ixO^S,m0_+idim)+ &
 !!!    qdt*grav(ixO^S,idim)*(w(ixO^S,rho_)+w(ixO^S,rhob_))
 
-     CASE(e_)
+     case(e_)
         ! de/dt= +g_i*m_i
-        DO idim=1,ndim
-           IF(ABS(eqpar(grav0_+idim))>smalldouble) &
+        do idim=1,ndim
+           if(abs(eqpar(grav0_+idim))>smalldouble) &
                 wnew(ixO^S,ee_)=wnew(ixO^S,ee_)+ &
                 qdt*eqpar(grav0_+idim)*w(ixO^S,rho_)*w(ixO^S,m0_+idim)/(w(ixO^S,rho_)+w(ixO^S,rhob_))
 
@@ -74,12 +74,12 @@ SUBROUTINE addsource_grav(qdt,ixI^L,ixO^L,iws,qtC,w,qt,wnew)
 !!! wnew(ixO^S,ee_)=wnew(ixO^S,ee_)+ &
 !!!    qdt*grav(ixO^S,idim)*w(ixO^S,m0_+idim)
 
-        END DO
-     END SELECT ! iw
-  END DO        ! iiw
+        end do
+     end select ! iw
+  end do        ! iiw
 
-  RETURN
-END SUBROUTINE addsource_grav
+  return
+end subroutine addsource_grav
 !=============================================================================
 !!! subroutine setgrav(w,ixI^L,ixO^L,grav)
 
@@ -95,14 +95,14 @@ END SUBROUTINE addsource_grav
 !!! end
 !=============================================================================
 
-SUBROUTINE getdt_grav(w,ix^L)
+subroutine getdt_grav(w,ix^L)
 
-  USE constants
-  USE common_varibles
+  use constants
+  use common_varibles
 
-  DOUBLE PRECISION :: w(ixG^T,nw)
-  INTEGER :: ix^L,idim
-  DOUBLE PRECISION, SAVE :: dtgrav
+  double precision :: w(ixG^T,nw)
+  integer :: ix^L,idim
+  double precision, save :: dtgrav
  
 !!! ! For spatially varying gravity you need a common grav array
 !!! double precision:: grav(ixG^T,ndim)
@@ -110,32 +110,32 @@ SUBROUTINE getdt_grav(w,ix^L)
 
   !----------------------------------------------------------------------------
 
-  oktest=INDEX(teststr,'getdt')>=1
+  oktest=index(teststr,'getdt')>=1
 
-  IF(it==itmin)THEN
+  if(it==itmin)then
      ! If gravity is descibed by the equation parameters, use this:
      dtgrav=bigdouble
-     DO idim=1,ndim
-        IF(ABS(eqpar(grav0_+idim))>zero)&
-             dtgrav=MIN(dtgrav,&
-             one/SQRT(MAXVAL(ABS(eqpar(grav0_+idim))/dx(ixM^S,1:ndim))))
-     ENDDO
+     do idim=1,ndim
+        if(abs(eqpar(grav0_+idim))>zero)&
+             dtgrav=min(dtgrav,&
+             one/sqrt(maxval(abs(eqpar(grav0_+idim))/dx(ixM^S,1:ndim))))
+     enddo
 !!! ! For spatially varying gravity use this instead of the lines above:
 !!! call setgrav(w,ixG^L,ixM^L,grav)
 !!! ! If gravity does not change with time, calculate dtgrav here:
 !!! dtgrav=one/sqrt(maxval(abs(grav(ixM^S,1:ndim))/dx(ixM^S,1:ndim)))
-  ENDIF
+  endif
 
 !!! ! If gravity changes with time, calculate dtgrav here:
 !!! dtgrav=one/sqrt(maxval(abs(grav(ixM^S,1:ndim))/dx(ixM^S,1:ndim)))
 
-  {^IFMPI CALL mpiallreduce(dtgrav,MPI_MIN)}
+  {^IFMPI call mpiallreduce(dtgrav,MPI_MIN)}
 
   ! limit the time step
-  dt=MIN(dt,dtgrav)
-  IF(oktest)WRITE(*,*)'Gravity limit for dt:',dtgrav
+  dt=min(dt,dtgrav)
+  if(oktest)write(*,*)'Gravity limit for dt:',dtgrav
 
-  RETURN
-END SUBROUTINE getdt_grav
+  return
+end subroutine getdt_grav
 
 !=============================================================================

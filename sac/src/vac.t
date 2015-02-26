@@ -2,7 +2,7 @@
 ! module vac
 
 !=============================================================================
-PROGRAM vac
+program vac
 
   ! SAC - Sheffield Advanced Code, 2010 S. Shelag, V Fedun and R. Erdelyi
   ! Based on the
@@ -10,206 +10,206 @@ PROGRAM vac
 
   ! Pulled upto FORTRAN 2008 by Stuart Mumford 2013
 
-  USE constants
-  USE common_varibles
+  use constants
+  use common_varibles
 
-  INTEGER:: ifile,ierrcode,iw
-  DOUBLE PRECISION:: w(ixG^T,nw),wnrm2,dtold,time0,time1
+  integer:: ifile,ierrcode,iw
+  double precision:: w(ixG^T,nw),wnrm2,dtold,time0,time1
 
   ! functions
-  LOGICAL:: timetofinish,timetosave
-  DOUBLE PRECISION:: cputime
+  logical:: timetofinish,timetosave
+  double precision:: cputime
   !-----------------------------------------------------------------------------
-  {CALL mpiinit ^IFMPI}
+  {call mpiinit ^IFMPI}
 
-  verbose=.TRUE. .AND.ipe==0^IFMPI
-  IF(verbose)THEN
-     WRITE(*,'(a)')'VAC 4.52 configured to'
-     WRITE(*,'(a)')'  -d=22 -phi=0 -z=0 -g=104,104 -p= -u='
-     WRITE(*,'(a)')'  -on=cd,rk'
-     WRITE(*,'(a)')'  -off=mc,fct,tvdlf,tvd,impl,poisson,ct,gencoord,resist,mpi'
-     {^IFMPI WRITE(*,'(a,i3,a)')'Running on ',npe,' processors'}
-  ENDIF
+  verbose=.true. .and.ipe==0^IFMPI
+  if(verbose)then
+     write(*,'(a)')'VAC 4.52 configured to'
+     write(*,'(a)')'  -d=22 -phi=0 -z=0 -g=104,104 -p= -u='
+     write(*,'(a)')'  -on=cd,rk'
+     write(*,'(a)')'  -off=mc,fct,tvdlf,tvd,impl,poisson,ct,gencoord,resist,mpi'
+     {^IFMPI write(*,'(a,i3,a)')'Running on ',npe,' processors'}
+  endif
 
-  IF(ipe==0)^IFMPI  time0=cputime()
+  if(ipe==0)^IFMPI  time0=cputime()
 
-  CALL physini                  ! Initialize physics dependent variables
-  CALL readparameters(w)        ! Read filenames and parameters for advection
+  call physini                  ! Initialize physics dependent variables
+  call readparameters(w)        ! Read filenames and parameters for advection
   ! Read initial data, set ixM,ixG,gencoord
 
   {^NOGEN 
-  IF(gencoord)THEN
-     WRITE(*,*) 'Error: input file contains general grid'
-     WRITE(*,*) 'Recompile vac after setvac -on=gencoord is set.'
-  ENDIF
+  if(gencoord)then
+     write(*,*) 'Error: input file contains general grid'
+     write(*,*) 'Recompile vac after setvac -on=gencoord is set.'
+  endif
   }
-  CALL boundsetup               ! Initialize boundary data
+  call boundsetup               ! Initialize boundary data
   ! Initialize grid geometry
-  IF(gencoord)THEN
-     {^IFGEN CALL gridsetup2}
-     {^NOGEN CALL die('Error: gencoord module is off')}
-  ELSE
-     CALL gridsetup1
-  ENDIF
+  if(gencoord)then
+     {^IFGEN call gridsetup2}
+     {^NOGEN call die('Error: gencoord module is off')}
+  else
+     call gridsetup1
+  endif
 
-  CALL startup                  ! Initialize it, t, headers etc.
+  call startup                  ! Initialize it, t, headers etc.
 
-  IF(verbose)WRITE(*,'(a,f10.3,a)')'Start Advance  ',cputime()-time0,' sec'
+  if(verbose)write(*,'(a,f10.3,a)')'Start Advance  ',cputime()-time0,' sec'
 
-  CALL getboundary(t,1,nw,1,ndim,w)
-  DO
-     DO ifile=1,nfile
-        IF(timetosave(ifile)) CALL savefile(ifile,w)
-     END DO
+  call getboundary(t,1,nw,1,ndim,w)
+  do
+     do ifile=1,nfile
+        if(timetosave(ifile)) call savefile(ifile,w)
+     end do
 
      ! Determine time step
-     IF(dtpar>zero)THEN
+     if(dtpar>zero)then
         dt=dtpar
-     ELSE
-        IF(courantpar>zero)CALL getdt_courant(w,ixM^L)
-        CALL getdt(w,ixM^L)
-        CALL getdt_special(w,ixM^L)
+     else
+        if(courantpar>zero)call getdt_courant(w,ixM^L)
+        call getdt(w,ixM^L)
+        call getdt_special(w,ixM^L)
 
-        IF(dtcantgrow.AND.it>itmin)dt=MIN(dt,dtold)
+        if(dtcantgrow.and.it>itmin)dt=min(dt,dtold)
         dtold=dt
-     ENDIF
-     IF(dtmrpc>zero)dt=MIN(dt,dtmrpc)
+     endif
+     if(dtmrpc>zero)dt=min(dt,dtmrpc)
 
-     IF (timetofinish(time0)) EXIT
+     if (timetofinish(time0)) exit
 
      ! For slowsteps == 1, use dtpar in the first time step ONLY
-     IF(slowsteps==1.AND.it==itmin)dtpar=-one
+     if(slowsteps==1.and.it==itmin)dtpar=-one
 
      ! For slowsteps > 1, reduce dt for the first few steps 
-     IF(slowsteps>it-itmin+1) dt=dt*(one-(one-(it-itmin+one)/slowsteps)**2)
+     if(slowsteps>it-itmin+1) dt=dt*(one-(one-(it-itmin+one)/slowsteps)**2)
 
-     IF(tmaxexact)dt=MIN(dt,tmax-t+smalldouble)
+     if(tmaxexact)dt=min(dt,tmax-t+smalldouble)
 
      ! Store w into wold for residual calculations and 
      ! for TVD limiting based on the previous time step.
      wold(ixG^S,1:nw)=w(ixG^S,1:nw)
 
      ! Advance w (except variables with typefull='nul') by dt in the full grid
-     CALL advance(iw_full,w)
+     call advance(iw_full,w)
 
-     IF(residmin>zero .OR. residmax<bigdouble)THEN
+     if(residmin>zero .or. residmax<bigdouble)then
         ! calculate true residual ||w_n+1-w_n|| for steady-state calculations
         residual=zero
-        DO iw=1,nw
-           wnrm2=SUM(w(ixM^S,iw)**2)
-           {^IFMPI CALL mpiallreduce(wnrm2,MPI_SUM)}
-           IF(wnrm2<smalldouble)wnrm2=one
-           residual = residual + SUM((w(ixM^S,iw)-wold(ixM^S,iw))**2)/wnrm2
-        ENDDO
-        {^IFMPI CALL mpiallreduce(residual,MPI_SUM)}
-        residual=SQRT(residual/nw)
-     ENDIF
+        do iw=1,nw
+           wnrm2=sum(w(ixM^S,iw)**2)
+           {^IFMPI call mpiallreduce(wnrm2,MPI_SUM)}
+           if(wnrm2<smalldouble)wnrm2=one
+           residual = residual + sum((w(ixM^S,iw)-wold(ixM^S,iw))**2)/wnrm2
+        enddo
+        {^IFMPI call mpiallreduce(residual,MPI_SUM)}
+        residual=sqrt(residual/nw)
+     endif
 
      it=it+1
      t=t+dt
-     PRINT*, "****t=", t
-  END DO
+     print*, "****t=", t
+  end do
 
   time1=cputime()-time0
 
 
-  DO ifile=1,nfile
-     IF(itsavelast(ifile)<it)CALL savefile(ifile,w)
-     CLOSE(unitini+ifile)
-  ENDDO
+  do ifile=1,nfile
+     if(itsavelast(ifile)<it)call savefile(ifile,w)
+     close(unitini+ifile)
+  enddo
 
-  IF(verbose)WRITE(*,'(a,f10.3,a)')'Finish Advance ',time1,' sec'
+  if(verbose)write(*,'(a,f10.3,a)')'Finish Advance ',time1,' sec'
 
-  IF(ipe==0)THEN^IFMPI
+  if(ipe==0)then^IFMPI
 
-     IF(dt<dtmin)WRITE(unitterm,*)'Warning: dt<dtmin !!!'
-     IF(time1>cputimemax)WRITE(unitterm,*)'Warning: cputimemax exceeded !!!'
-     DO ierrcode=1,nerrcode
-        IF(nerror(ierrcode)>0)THEN
-           WRITE(*,"(a,i2,a,i5,a)")'Error (code=',&
+     if(dt<dtmin)write(unitterm,*)'Warning: dt<dtmin !!!'
+     if(time1>cputimemax)write(unitterm,*)'Warning: cputimemax exceeded !!!'
+     do ierrcode=1,nerrcode
+        if(nerror(ierrcode)>0)then
+           write(*,"(a,i2,a,i5,a)")'Error (code=',&
                 ierrcode,') occurred ',nerror(ierrcode),' times !!!'
-           SELECT CASE(ierrcode)
-           CASE(toosmallp_)
-              WRITE(*,"(a)")'Error description: Pressure below psmall'
-           CASE(toosmallr_)
-              WRITE(*,"(a)")'Error description: Density below rhosmall'
-           CASE(couranterr_)
-              WRITE(*,"(a)")'Error description: Courant number above 1'
-           CASE(poissonerr_)
-              WRITE(*,"(a)")'Error description: Poisson solver failed'
-           END SELECT
-        ENDIF
-     END DO
-  ENDIF^IFMPI
+           select case(ierrcode)
+           case(toosmallp_)
+              write(*,"(a)")'Error description: Pressure below psmall'
+           case(toosmallr_)
+              write(*,"(a)")'Error description: Density below rhosmall'
+           case(couranterr_)
+              write(*,"(a)")'Error description: Courant number above 1'
+           case(poissonerr_)
+              write(*,"(a)")'Error description: Poisson solver failed'
+           end select
+        endif
+     end do
+  endif^IFMPI
 
-  IF(verbose)THEN
-     IF(implpar>zero)THEN
-        WRITE(*,*)'Number of explicit evaluations:',nexpl
-        WRITE(*,*)'Number of Newton iterations   :',nnewton
-        WRITE(*,*)'Number of linear iterations   :',niter
-        WRITE(*,*)'Number of MatVecs             :',nmatvec
-     ENDIF
+  if(verbose)then
+     if(implpar>zero)then
+        write(*,*)'Number of explicit evaluations:',nexpl
+        write(*,*)'Number of Newton iterations   :',nnewton
+        write(*,*)'Number of linear iterations   :',niter
+        write(*,*)'Number of MatVecs             :',nmatvec
+     endif
 
-     IF(residmin>zero .OR. residmax<bigdouble)THEN
-        WRITE(*,*)'Number of time steps          :',it-itmin
-        WRITE(*,*)'Residual and residmin         :',residual,residmin
-     ENDIF
+     if(residmin>zero .or. residmax<bigdouble)then
+        write(*,*)'Number of time steps          :',it-itmin
+        write(*,*)'Residual and residmin         :',residual,residmin
+     endif
 
-     WRITE(*,'(a,f10.3,a)')'Finished VAC   ',cputime()-time0,' sec'
-  ENDIF
+     write(*,'(a,f10.3,a)')'Finished VAC   ',cputime()-time0,' sec'
+  endif
 
-  {CALL mpifinalize ^IFMPI}
+  {call mpifinalize ^IFMPI}
 
-END PROGRAM vac
+end program vac
 
 !=============================================================================
-SUBROUTINE startup
+subroutine startup
 
-  USE constants
-  USE common_varibles
+  use constants
+  use common_varibles
 
-  INTEGER:: ifile,iw,ivector,idim,qnvector
+  integer:: ifile,iw,ivector,idim,qnvector
   !-----------------------------------------------------------------------------
 
   ! Initialize dtmrpc which will be calculated by MRPC
   dtmrpc=-one
 
   ! Initialize dtcourant, which will be calculated by TVD, TVD-MUSCL or TVDLF
-  DO idim=1,ndim
+  do idim=1,ndim
      dtcourant(idim)=bigdouble
-  ENDDO
+  enddo
 
   ! If dtpar is set, and not only for the first time step (slowsteps/=1)
   ! then set courantpar<0, so that dtcourant is not calculated at all
-  IF(dtpar>zero.AND.slowsteps/=1)courantpar= -one
+  if(dtpar>zero.and.slowsteps/=1)courantpar= -one
 
   itmin=it
-  DO ifile=1,nfile
+  do ifile=1,nfile
      tsavelast(ifile)=t
      itsavelast(ifile)=it
-  END DO
+  end do
   isaveout=0
 
   ! Initialize vectoriw based on iw_vector. vectoriw=-1 for scalar variables,
-  DO iw=1,nw
+  do iw=1,nw
      vectoriw(iw)=-1
-  END DO
+  end do
   ! It points to the 0-th component (iw_vector=m0_,b0_,...) for vector variables.
   ! Only the first ndim components of the vector variables are rotated in
   ! generalized coordinates. 
   ! qnvector is only used to avoid compiler warning when nvector=0
 
   qnvector=nvector
-  DO ivector=1,qnvector
-     DO idim=1,ndim
+  do ivector=1,qnvector
+     do idim=1,ndim
         vectoriw(iw_vector(ivector)+idim)=iw_vector(ivector)
-     END DO
-  END DO
+     end do
+  end do
 
   {^IFPHI
   !For 3D polar (r,z,phi) grid m_phi behaves as a scalar
   !and we take advantage of that to conserve angular momentum
-  IF(angmomfix.AND.polargrid.AND.gencoord)vectoriw(mphi_)=-1
+  if(angmomfix.and.polargrid.and.gencoord)vectoriw(mphi_)=-1
   }
 
   ! Initial value for residual and counters
@@ -224,72 +224,72 @@ SUBROUTINE startup
   fstore(ixG^S,1:ndim)=zero
   }
 
-  RETURN
-END SUBROUTINE startup
+  return
+end subroutine startup
 
 !=============================================================================
-SUBROUTINE advance(iws,w)
+subroutine advance(iws,w)
 
   ! w(iws,t) -> w(iws,t+qdt) based on typedimsplit and typesourcesplit
   !
   ! Add split sources and fluxes with unsplit sources
 
-  USE constants
-  USE common_varibles
+  use constants
+  use common_varibles
 
-  INTEGER:: iws(niw_)
-  DOUBLE PRECISION:: w(ixG^T,nw), w1(ixG^T,nw)
+  integer:: iws(niw_)
+  double precision:: w(ixG^T,nw), w1(ixG^T,nw)
   !-----------------------------------------------------------------------------
 
   ! Add split sources berforehand if this is required
-  IF(sourcesplit)THEN
+  if(sourcesplit)then
      w1(ixG^S,1:nw)=w(ixG^S,1:nw)
-     SELECT CASE(typesourcesplit)
-     CASE('sf')
-        CALL addsource2(dt,ixG^L,ixM^L,iws,t,w1,t,w)
-     CASE('sfs')
-        CALL addsource2(dt/2,ixG^L,ixM^L,iws,t,w1,t,w)
-     CASE('ssf')
-        CALL addsource2(dt/2,ixG^L,ixG^L,iws,t,w,t,w1)
-        CALL addsource2(dt,ixG^L,ixM^L,iws,t,w1,t,w)
-     CASE('ssfss')
-        CALL addsource2(dt/4,ixG^L,ixG^L,iws,t,w,t,w1)
-        CALL addsource2(dt/2,ixG^L,ixM^L,iws,t,w1,t,w)
-     CASE default
-        CALL die('Error: Unknown typesourcesplit='//typesourcesplit)
-     END SELECT
-     CALL getboundary(t,1,nw,1,ndim,w)
-  ENDIF
+     select case(typesourcesplit)
+     case('sf')
+        call addsource2(dt,ixG^L,ixM^L,iws,t,w1,t,w)
+     case('sfs')
+        call addsource2(dt/2,ixG^L,ixM^L,iws,t,w1,t,w)
+     case('ssf')
+        call addsource2(dt/2,ixG^L,ixG^L,iws,t,w,t,w1)
+        call addsource2(dt,ixG^L,ixM^L,iws,t,w1,t,w)
+     case('ssfss')
+        call addsource2(dt/4,ixG^L,ixG^L,iws,t,w,t,w1)
+        call addsource2(dt/2,ixG^L,ixM^L,iws,t,w1,t,w)
+     case default
+        call die('Error: Unknown typesourcesplit='//typesourcesplit)
+     end select
+     call getboundary(t,1,nw,1,ndim,w)
+  endif
 
   ! Add fluxes and unsplit sources explicitly or implicitly
-  IF(typeimpl1=='nul')THEN
-     CALL advance_expl(typefull1,ixG^L,iws,w1,w)
-  ELSE
+  if(typeimpl1=='nul')then
+     call advance_expl(typefull1,ixG^L,iws,w1,w)
+  else
      {^IFIMPL
-     CALL advance_impl(ixG^L,w1,w)
-     IF(.FALSE.)} CALL die('IMPL module is switched off')
-  ENDIF
+     call advance_impl(ixG^L,w1,w)
+     if(.false.)} call die('IMPL module is switched off')
+  endif
 
   ! Add split sources afterwards if this is required
-  IF(sourcesplit)THEN
-     SELECT CASE(typesourcesplit)
-     CASE('sfs')
+  if(sourcesplit)then
+     select case(typesourcesplit)
+     case('sfs')
         w1(ixG^S,1:nw)=w(ixG^S,1:nw)
-        CALL addsource2(dt/2,ixG^L,ixM^L,iws,t+dt,w1,t+dt,w)
-        CALL getboundary(t+dt,1,nw,1,ndim,w)
-     CASE('ssfss')
+        call addsource2(dt/2,ixG^L,ixM^L,iws,t+dt,w1,t+dt,w)
+        call getboundary(t+dt,1,nw,1,ndim,w)
+     case('ssfss')
         w1(ixG^S,1:nw)=w(ixG^S,1:nw)
-        CALL addsource2(dt/4,ixG^L,ixG^L,iws,t+dt,w ,t+dt,w1)
-        CALL addsource2(dt/2,ixG^L,ixM^L,iws,t+dt,w1,t+dt, w)
-        CALL getboundary(t+dt,1,nw,1,ndim,w)
-     END SELECT
-  ENDIF
+        call addsource2(dt/4,ixG^L,ixG^L,iws,t+dt,w ,t+dt,w1)
+        call addsource2(dt/2,ixG^L,ixM^L,iws,t+dt,w1,t+dt, w)
+        call getboundary(t+dt,1,nw,1,ndim,w)
+     end select
+  endif
 
-  RETURN
-END SUBROUTINE advance
+  return
+end subroutine advance
 
 !=============================================================================
-SUBROUTINE advance_expl(method,ix^L,iws,w1,w)
+subroutine advance_expl(method,ix^L,iws,w1,w)
 
   ! w(t) -> w(t+qdt) within ix^L based on typedimsplit, typesourcesplit, nproc
   !
@@ -298,225 +298,225 @@ SUBROUTINE advance_expl(method,ix^L,iws,w1,w)
   !
   ! w1 can be ised freely.
 
-  USE constants
-  USE common_varibles
+  use constants
+  use common_varibles
 
-  CHARACTER(^LENTYPE) :: method
-  INTEGER :: ix^L,iws(niw_)
-  DOUBLE PRECISION :: w(ixG^T,nw),w1(ixG^T,nw)
+  character(^LENTYPE) :: method
+  integer :: ix^L,iws(niw_)
+  double precision :: w(ixG^T,nw),w1(ixG^T,nw)
 
-  LOGICAL :: firstsweep,lastsweep
+  logical :: firstsweep,lastsweep
   !-----------------------------------------------------------------------------
 
-  oktest=INDEX(teststr,'advance')>=1
-  IF(oktest)WRITE(*,*)'Advance method,it,w:',method,' ',it,w(ixtest^D,iwtest)
+  oktest=index(teststr,'advance')>=1
+  if(oktest)write(*,*)'Advance method,it,w:',method,' ',it,w(ixtest^D,iwtest)
 
-  IF(ix^L/=ixG^L|.OR.|.OR.)&
-       CALL die('Error in Advance: No subgrids implemented yet...')
+  if(ix^L/=ixG^L|.or.|.or.)&
+       call die('Error in Advance: No subgrids implemented yet...')
 
   nexpl=nexpl+1
-  firstsweep=.TRUE.
-  IF(dimsplit)THEN
-     IF((it/2)*2.EQ.it .OR. typedimsplit=='xy')THEN
+  firstsweep=.true.
+  if(dimsplit)then
+     if((it/2)*2.eq.it .or. typedimsplit=='xy')then
         !If typedimsplit='xy', always do the sweeps in order of increasing idim,
         !otherwise for even parity of "it" only, and reverse order for odd. 
-        DO idimsplit=1,ndim
+        do idimsplit=1,ndim
            lastsweep= idimsplit==ndim
-           CALL advect(method,ix^L,iws,idimsplit,idimsplit,w1,w,firstsweep,lastsweep)
-        ENDDO
-     ELSE
+           call advect(method,ix^L,iws,idimsplit,idimsplit,w1,w,firstsweep,lastsweep)
+        enddo
+     else
         ! If the parity of "it" is odd and typedimsplit=xyyx, do sweeps backwards
-        DO idimsplit=ndim,1,-1
+        do idimsplit=ndim,1,-1
            lastsweep= idimsplit==1
-           CALL advect(method,ix^L,iws,idimsplit,idimsplit,w1,w,firstsweep,lastsweep)
-        ENDDO
-     ENDIF
-  ELSE
+           call advect(method,ix^L,iws,idimsplit,idimsplit,w1,w,firstsweep,lastsweep)
+        enddo
+     endif
+  else
      ! Add fluxes from all directions at once
-     lastsweep= .TRUE.
-     CALL advect(method,ix^L,iws,1,ndim,w1,w,firstsweep,lastsweep)
-  ENDIF
+     lastsweep= .true.
+     call advect(method,ix^L,iws,1,ndim,w1,w,firstsweep,lastsweep)
+  endif
 
-  IF(typefilter1/='nul')THEN
+  if(typefilter1/='nul')then
      ! We use updated w for the filter fluxes
      w1(ix^S,1:nw)=w(ix^S,1:nw)
 
      ! Filter according to typefilter1
-     SELECT CASE(typefilter1)
+     select case(typefilter1)
         {^IFTVD
-     CASE('tvd1')
+     case('tvd1')
         ! Call tvdlimit with tvd1 (2nd order Lax-Wendroff terms off)
-        CALL tvdlimit(typefilter1,dt,ix^L,ix^L^LSUB2,iw_filter,1,ndim,w1,t+dt,w)
+        call tvdlimit(typefilter1,dt,ix^L,ix^L^LSUB2,iw_filter,1,ndim,w1,t+dt,w)
         }
         {^IFTVDLF
-     CASE('tvdlf','tvdmu','tvdlf1','tvdmu1')
+     case('tvdlf','tvdmu','tvdlf1','tvdmu1')
         ! Call tvdmusclf with filter method and physical fluxes off
-        CALL tvdmusclf(.FALSE.,typefilter1,dt,ix^L,ix^L^LSUB2,iw_filter,1,ndim,&
+        call tvdmusclf(.false.,typefilter1,dt,ix^L,ix^L^LSUB2,iw_filter,1,ndim,&
              t+dt,w1,t+dt,w)
         }
-     CASE default
-        CALL die('Error in Advance: typefilter='&
+     case default
+        call die('Error in Advance: typefilter='&
              //typefilter1//' is unknown or module is switched off!')
      endselect
-     CALL getboundary(t+dt,1,nw,1,ndim,w)
-  ENDIF
+     call getboundary(t+dt,1,nw,1,ndim,w)
+  endif
 
-  CALL process(0,1,ndim,w)
+  call process(0,1,ndim,w)
 
-  IF(oktest)WRITE(*,*)'Advance new w:',w(ixtest^D,iwtest)
+  if(oktest)write(*,*)'Advance new w:',w(ixtest^D,iwtest)
 
-  RETURN
-END SUBROUTINE advance_expl
+  return
+end subroutine advance_expl
 
 !=============================================================================
-SUBROUTINE advect(method,ix^L,iws,idim^LIM,w1,w,firstsweep,lastsweep) 
+subroutine advect(method,ix^L,iws,idim^LIM,w1,w,firstsweep,lastsweep) 
   ! Process w if nproc/=0:   		call process
   ! Add fluxes and unsplit sources in 
   ! directions idim=idimmin..idimmax:	call advect1
   !
   ! Depending on typeadvance and implpar call advect1 several times
 
-  USE constants
-  USE common_varibles
+  use constants
+  use common_varibles
 
-  CHARACTER(^LENTYPE):: method
-  INTEGER:: ix^L,iws(niw_),idim^LIM
-  DOUBLE PRECISION:: w1(ixG^T,nw),w(ixG^T,nw)
+  character(^LENTYPE):: method
+  integer:: ix^L,iws(niw_),idim^LIM
+  double precision:: w1(ixG^T,nw),w(ixG^T,nw)
 
   ! For most Runge-Kutta type schemes one more full array is needed
   ! For classical RK4 another array is needed
   {^ANDIFRK 
-  DOUBLE PRECISION:: w2(ixG^T,nw),w3(ixG^T,nw)
+  double precision:: w2(ixG^T,nw),w3(ixG^T,nw)
   }
 
   !!!MEMORY Needed for typeadvance='adams2' only
-  {^IFIMPL{^ANDIFRK SAVE w2}}
+  {^IFIMPL{^ANDIFRK save w2}}
 
-  LOGICAL, INTENT(INOUT) :: firstsweep, lastsweep
+  logical, intent(INOUT) :: firstsweep, lastsweep
   !-----------------------------------------------------------------------------
 
-  oktest=INDEX(teststr,'advect')>=1
-  IF(oktest)WRITE(*,*)'Advect method w:',method,' ',w(ixtest^D,iwtest)
+  oktest=index(teststr,'advect')>=1
+  if(oktest)write(*,*)'Advect method w:',method,' ',w(ixtest^D,iwtest)
 
   ! For negative "nproc(1)" call process, if positive check whether this is the
   ! first sweep and if "it-itmin" is an integer multiple of "nproc(1)" 
   ! (the frequency of processing before the whole timestep)
   ! Processing is done in advance_impl for implicit methods
-  IF(nproc(1)/=0.AND.implpar<=zero)THEN
-     IF(nproc(1)<0.OR.(firstsweep.AND.it-itmin==((it-itmin)/nproc(1))*nproc(1)))&
-          CALL process(1,idim^LIM,w)
-  END IF
+  if(nproc(1)/=0.and.implpar<=zero)then
+     if(nproc(1)<0.or.(firstsweep.and.it-itmin==((it-itmin)/nproc(1))*nproc(1)))&
+          call process(1,idim^LIM,w)
+  end if
 
   ! Typically use "method" and at least one extra variable w1
   w1(ix^S,1:nw)=w(ix^S,1:nw)
 
   istep=0
-  SELECT CASE(typeadvance)
-  CASE('onestep')
-     CALL advect1(method,dt,ix^L,iws,idim^LIM,t,w1,t,w,firstsweep,lastsweep)
+  select case(typeadvance)
+  case('onestep')
+     call advect1(method,dt,ix^L,iws,idim^LIM,t,w1,t,w,firstsweep,lastsweep)
      {^IFIMPL{^ANDIFRK
-  CASE('adams2')
+  case('adams2')
      ! w=w+dt*R+dt/2*[R-(dt/dtold)*R_n-1]
      ! Use w1=w+dt*R and w2=R_n-1/dtold
-     IF(it==itmin)THEN
-        CALL advect1(method,dt,ix^L,iws,idim^LIM,t,w1,t,w,firstsweep,lastsweep)
+     if(it==itmin)then
+        call advect1(method,dt,ix^L,iws,idim^LIM,t,w1,t,w,firstsweep,lastsweep)
         w2(ix^S,1:nw)=(w(ix^S,1:nw)-w1(ix^S,1:nw))/dt**2
-     ELSE
-        CALL advect1(method,dt,ix^L,iws,idim^LIM,t,w,t,w1,firstsweep,lastsweep)
+     else
+        call advect1(method,dt,ix^L,iws,idim^LIM,t,w,t,w1,firstsweep,lastsweep)
         w1(ix^S,1:nw)=w1(ix^S,1:nw)-w(ix^S,1:nw)
         w(ix^S,1:nw)=w(ix^S,1:nw)+w1(ix^S,1:nw)&
              +half*(w1(ix^S,1:nw)-dt**2*w2(ix^S,1:nw))
         w2(ix^S,1:nw)=w1(ix^S,1:nw)/dt**2
-     ENDIF
+     endif
      }}
-  CASE('twostep')
+  case('twostep')
      ! do predictor step with typepred method to calculate w1 from w, then
      ! full step with method. Fluxes and unsplit sources are taken at w1.
-     CALL advect1(typepred1,dt/2,ix^L,iws,idim^LIM,t     ,w,t,w1,firstsweep,lastsweep)
-     CALL advect1(method   ,dt  ,ix^L,iws,idim^LIM,t+dt/2,w1,t,w,firstsweep,lastsweep)
+     call advect1(typepred1,dt/2,ix^L,iws,idim^LIM,t     ,w,t,w1,firstsweep,lastsweep)
+     call advect1(method   ,dt  ,ix^L,iws,idim^LIM,t+dt/2,w1,t,w,firstsweep,lastsweep)
      {^ANDIFRK
-  CASE('threestep')
+  case('threestep')
      ! Shu-s third order method based on eq 2.15b of Yee II with signs corrected 
-     CALL advect1(method,dt      ,ix^L,iws,idim^LIM,t     ,w ,t     ,w1,firstsweep,lastsweep)
+     call advect1(method,dt      ,ix^L,iws,idim^LIM,t     ,w ,t     ,w1,firstsweep,lastsweep)
      w2(ix^S,1:nw)=3*quarter*w(ix^S,1:nw)+quarter*w1(ix^S,1:nw)
-     CALL advect1(method,dt/4    ,ix^L,iws,idim^LIM,t+dt  ,w1,t+dt/4,w2,firstsweep,lastsweep)
+     call advect1(method,dt/4    ,ix^L,iws,idim^LIM,t+dt  ,w1,t+dt/4,w2,firstsweep,lastsweep)
      w(ix^S,1:nw)=w(ix^S,1:nw)/3+w2(ix^S,1:nw)*(two/3)
-     CALL advect1(method,dt*two/3,ix^L,iws,idim^LIM,t+dt/2,w2,t+dt/3,w ,firstsweep,lastsweep)
+     call advect1(method,dt*two/3,ix^L,iws,idim^LIM,t+dt/2,w2,t+dt/3,w ,firstsweep,lastsweep)
      }
      {^ANDIFRK
-  CASE('fourstep')
+  case('fourstep')
      ! Classical four step Runge-Kutta
      ! w1=w+Dt/2*k1
-     CALL advect1(method,dt/2    ,ix^L,iws,idim^LIM,t     ,w ,t,w1,firstsweep,lastsweep)
+     call advect1(method,dt/2    ,ix^L,iws,idim^LIM,t     ,w ,t,w1,firstsweep,lastsweep)
      ! w2=w+Dt/2*k2
      w2(ix^S,1:nw)=w(ix^S,1:nw)
-     CALL advect1(method,dt/2    ,ix^L,iws,idim^LIM,t+dt/2,w1,t,w2,firstsweep,lastsweep)
+     call advect1(method,dt/2    ,ix^L,iws,idim^LIM,t+dt/2,w1,t,w2,firstsweep,lastsweep)
      ! w3=w+dt*k3
      w3(ix^S,1:nw)=w(ix^S,1:nw)   
-     CALL advect1(method,dt      ,ix^L,iws,idim^LIM,t+dt/2,w2,t,w3,firstsweep,lastsweep)
+     call advect1(method,dt      ,ix^L,iws,idim^LIM,t+dt/2,w2,t,w3,firstsweep,lastsweep)
      ! w1=(w1+2*w2+w3)/3=Dt*(k1+2*k2+2*k3)/6
      w1(ix^S,1:nw)=(w1(ix^S,1:nw)+2*w2(ix^S,1:nw)+w3(ix^S,1:nw)-4*w(ix^S,1:nw))/3
      ! w=w+Dt*k4/6
-     CALL advect1(method,dt/6    ,ix^L,iws,idim^LIM,t+dt  ,w3,t,w,firstsweep,lastsweep)
+     call advect1(method,dt/6    ,ix^L,iws,idim^LIM,t+dt  ,w3,t,w,firstsweep,lastsweep)
      ! w=w+Dt*(k1+2*k2+2*k3+k4)/6
      w(ix^S,1:nw)=w(ix^S,1:nw)+w1(ix^S,1:nw)
      }
      {^ANDIFRK
-  CASE('sterck')
+  case('sterck')
      ! H. Sterck has this fourstep time integration, w2 is needed
-     CALL advect1(method,dt*0.12,ix^L,iws,idim^LIM,t        ,w ,t,w1,firstsweep,lastsweep)
+     call advect1(method,dt*0.12,ix^L,iws,idim^LIM,t        ,w ,t,w1,firstsweep,lastsweep)
      w2(ix^S,1:nw)=w(ix^S,1:nw)
-     CALL advect1(method,dt/4   ,ix^L,iws,idim^LIM,t+dt*0.12,w1,t,w2,firstsweep,lastsweep)
+     call advect1(method,dt/4   ,ix^L,iws,idim^LIM,t+dt*0.12,w1,t,w2,firstsweep,lastsweep)
      w1(ix^S,1:nw)=w(ix^S,1:nw)
-     CALL advect1(method,dt/2   ,ix^L,iws,idim^LIM,t+dt/4   ,w2,t,w1,firstsweep,lastsweep)
-     CALL advect1(method,dt     ,ix^L,iws,idim^LIM,t+dt/2   ,w1,t,w,firstsweep,lastsweep)
+     call advect1(method,dt/2   ,ix^L,iws,idim^LIM,t+dt/4   ,w2,t,w1,firstsweep,lastsweep)
+     call advect1(method,dt     ,ix^L,iws,idim^LIM,t+dt/2   ,w1,t,w,firstsweep,lastsweep)
      }
      {^ANDIFRK
-  CASE('jameson')
+  case('jameson')
      ! Based on eq.2.15 of Yee II
-     CALL advect1(method,dt/4,ix^L,iws,idim^LIM,t     ,w ,t,w1,firstsweep,lastsweep)
+     call advect1(method,dt/4,ix^L,iws,idim^LIM,t     ,w ,t,w1,firstsweep,lastsweep)
      w2(ix^S,1:nw)=w(ix^S,1:nw)
-     CALL advect1(method,dt/3,ix^L,iws,idim^LIM,t+dt/4,w1,t,w2,firstsweep,lastsweep)
+     call advect1(method,dt/3,ix^L,iws,idim^LIM,t+dt/4,w1,t,w2,firstsweep,lastsweep)
      w1(ix^S,1:nw)=w(ix^S,1:nw)
-     CALL advect1(method,dt/2,ix^L,iws,idim^LIM,t+dt/3,w2,t,w1,firstsweep,lastsweep)
-     CALL advect1(method,dt  ,ix^L,iws,idim^LIM,t+dt/2,w1,t,w,firstsweep,lastsweep)
+     call advect1(method,dt/2,ix^L,iws,idim^LIM,t+dt/3,w2,t,w1,firstsweep,lastsweep)
+     call advect1(method,dt  ,ix^L,iws,idim^LIM,t+dt/2,w1,t,w,firstsweep,lastsweep)
      }
-  CASE default
-     WRITE(*,*)'typeadvance=',typeadvance
-     WRITE(*,*)'Error in Advect: Unknown time integration method or RK is off'
-     CALL die('Correct typeadvance or: cd src; setvac -on=rk; make vac')
-  END SELECT
+  case default
+     write(*,*)'typeadvance=',typeadvance
+     write(*,*)'Error in Advect: Unknown time integration method or RK is off'
+     call die('Correct typeadvance or: cd src; setvac -on=rk; make vac')
+  end select
 
-  IF(oktest)WRITE(*,*)'Advect final w:',w(ixtest^D,iwtest)
+  if(oktest)write(*,*)'Advect final w:',w(ixtest^D,iwtest)
 
-  firstsweep=.FALSE.
+  firstsweep=.false.
 
-  RETURN
-END SUBROUTINE advect
+  return
+end subroutine advect
 
 !=============================================================================
-SUBROUTINE advect1(method,qdt,ixI^L,iws,idim^LIM,qtC,wCT,qt,w,firstsweep,lastsweep)
+subroutine advect1(method,qdt,ixI^L,iws,idim^LIM,qtC,wCT,qt,w,firstsweep,lastsweep)
 
   ! Process if not first advection and nproc<0 is set
   ! Advect w to w+qdt*dF(wCT)_idim/dx_idim+qdt*((idimmax-idimmin+1)/ndim)*S(wCT)
   ! getboundaries
 
-  USE constants
-  USE common_varibles
+  use constants
+  use common_varibles
 
-  CHARACTER(^LENTYPE) :: method
-  INTEGER:: ixI^L,ixO^L,iws(niw_),idim^LIM,idim
-  DOUBLE PRECISION:: qdt,qtC,qt,wCT(ixG^T,nw),w(ixG^T,nw)
+  character(^LENTYPE) :: method
+  integer:: ixI^L,ixO^L,iws(niw_),idim^LIM,idim
+  double precision:: qdt,qtC,qt,wCT(ixG^T,nw),w(ixG^T,nw)
 
-  LOGICAL, INTENT(INOUT) :: firstsweep,lastsweep
+  logical, intent(INOUT) :: firstsweep,lastsweep
   !-----------------------------------------------------------------------------
 
   istep=istep+1
 
-  IF(INDEX(teststr,'saveadvect1')>=1) CALL savefile(fileout_,wCT)
+  if(index(teststr,'saveadvect1')>=1) call savefile(fileout_,wCT)
 
-  oktest=INDEX(teststr,'advect1')>=1
-  IF(oktest)WRITE(*,*)'Advect1 istep,wCT,w:',&
+  oktest=index(teststr,'advect1')>=1
+  if(oktest)write(*,*)'Advect1 istep,wCT,w:',&
        istep,wCT(ixtest^D,iwtest),w(ixtest^D,iwtest)
 
   ! In the first step wCT=w thus wCT is already processed if there is processing.
@@ -524,132 +524,132 @@ SUBROUTINE advect1(method,qdt,ixI^L,iws,idim^LIM,qtC,wCT,qt,w,firstsweep,lastswe
   ! this is the first sweep and if "it-itmin" is an integer multiple of 
   ! "nproc(2)" (the frequency of processing before intermediate steps)
   ! No processing here for implicit methods
-  IF(istep>1.AND.nproc(2)/=0.AND.implpar<=zero)THEN
-     IF(nproc(2)<0.OR.(firstsweep.AND.it-itmin==((it-itmin)/nproc(2))*nproc(2)))&
-          CALL process(2,idim^LIM,w)
-  END IF
+  if(istep>1.and.nproc(2)/=0.and.implpar<=zero)then
+     if(nproc(2)<0.or.(firstsweep.and.it-itmin==((it-itmin)/nproc(2))*nproc(2)))&
+          call process(2,idim^LIM,w)
+  end if
 
   ! Shrink ixO^L in all directions by 2
   ixO^L=ixI^L^LSUB2;
 
-  SELECT CASE(method)
+  select case(method)
      {^ANDIFCD
 
-  CASE('cd4')
-     CALL centdiff4(qdt,ixI^L,ixO^L,iws,idim^LIM,qtC,wCT,qt,w)
+  case('cd4')
+     call centdiff4(qdt,ixI^L,ixO^L,iws,idim^LIM,qtC,wCT,qt,w)
      }
 
-  CASE('source')
-     IF(sourceunsplit)CALL addsource2(qdt,ixI^L,ixO^L,iws,qtC,wCT,qt,w)
-  CASE('nul')
+  case('source')
+     if(sourceunsplit)call addsource2(qdt,ixI^L,ixO^L,iws,qtC,wCT,qt,w)
+  case('nul')
      ! There is nothing to do
      !HPF_ if(.false.)write(*,*)'This avoids an xlhpf compiler bug'
-  CASE default
-     WRITE(*,*)'Error in Advect1:',method,' is unknown or switched off!'
-     CALL die('Error in Advect1:'//method//' is unknown or switched off!')
-  END SELECT
+  case default
+     write(*,*)'Error in Advect1:',method,' is unknown or switched off!'
+     call die('Error in Advect1:'//method//' is unknown or switched off!')
+  end select
 
-  CALL getboundary(qt+qdt,1,nw,1,ndim,w)
+  call getboundary(qt+qdt,1,nw,1,ndim,w)
 
-  IF(oktest)WRITE(*,*)'Advect1 final w:',w(ixtest^D,iwtest)
+  if(oktest)write(*,*)'Advect1 final w:',w(ixtest^D,iwtest)
 
-  RETURN
-END SUBROUTINE advect1
+  return
+end subroutine advect1
 
 !=============================================================================
-SUBROUTINE addsource2(qdt,ixII^L,ixOO^L,iws,qtC,wCT,qt,w)
+subroutine addsource2(qdt,ixII^L,ixOO^L,iws,qtC,wCT,qt,w)
 
   ! Add source within ixOO for iws: w=w+qdt*S[wCT]
 
-  USE constants
-  USE common_varibles
+  use constants
+  use common_varibles
 
-  INTEGER:: ixI^L,ixO^L,ixII^L,ixOO^L,iws(niw_)
-  DOUBLE PRECISION:: qdt,qtC,qt,wCT(ixG^T,nw),w(ixG^T,nw)
+  integer:: ixI^L,ixO^L,ixII^L,ixOO^L,iws(niw_)
+  double precision:: qdt,qtC,qt,wCT(ixG^T,nw),w(ixG^T,nw)
   !-----------------------------------------------------------------------------
 
-  oktest=INDEX(teststr,'addsource')>=1
-  IF(oktest)WRITE(*,*)'Add Source qdt,wCT,w:',&
+  oktest=index(teststr,'addsource')>=1
+  if(oktest)write(*,*)'Add Source qdt,wCT,w:',&
        qdt,wCT(ixtest^D,iwtest),w(ixtest^D,iwtest)
 
   ! AddSource and SpecialSource may shrink ixO or expand ixI for derivatives 
   ixI^L=ixII^L; ixO^L=ixOO^L;
 
-  CALL specialsource(qdt,ixI^L,ixO^L,iws,qtC,wCT,qt,w)
+  call specialsource(qdt,ixI^L,ixO^L,iws,qtC,wCT,qt,w)
 
-  CALL     addsource(qdt,ixI^L,ixO^L,iws,qtC,wCT,qt,w)
+  call     addsource(qdt,ixI^L,ixO^L,iws,qtC,wCT,qt,w)
 
-  IF(oktest)WRITE(*,*)'wnew:',w(ixtest^D,iwtest)
+  if(oktest)write(*,*)'wnew:',w(ixtest^D,iwtest)
 
   ! If AddSource/SpecialSource shrunk ixO, getboundary is needed.
-  IF(ixO^L^LTixOO^L|.OR.|.OR.)THEN
-     CALL getboundary(qt+qdt,1,nw,1,ndim,w)
-     IF(oktest)WRITE(*,*)'wnew after getboundary:',w(ixtest^D,iwtest)
-  END IF
+  if(ixO^L^LTixOO^L|.or.|.or.)then
+     call getboundary(qt+qdt,1,nw,1,ndim,w)
+     if(oktest)write(*,*)'wnew after getboundary:',w(ixtest^D,iwtest)
+  end if
 
-  RETURN
-END SUBROUTINE addsource2
+  return
+end subroutine addsource2
 
 !=============================================================================
-LOGICAL FUNCTION timetofinish(time0)
+logical function timetofinish(time0)
 
   ! Finish when it or t reached its maximum expected value, or dt is too small,
   ! or residual is small enough. Other conditions may be included.
 
-  USE constants
-  USE common_varibles
+  use constants
+  use common_varibles
 
-  DOUBLE PRECISION:: time0, cputime
-  LOGICAL:: okfinish
+  double precision:: time0, cputime
+  logical:: okfinish
   !-----------------------------------------------------------------------------
 
-  okfinish = it>=itmax .OR. t>=tmax .OR. dt<dtmin .OR. &
-       (it>itmin.AND.(residual<residmin .OR. residual>residmax))
+  okfinish = it>=itmax .or. t>=tmax .or. dt<dtmin .or. &
+       (it>itmin.and.(residual<residmin .or. residual>residmax))
 
-  IF(cputimemax < bigdouble .AND. .NOT.okfinish) &
+  if(cputimemax < bigdouble .and. .not.okfinish) &
        okfinish= cputimemax <= cputime()-time0
 
   timetofinish=okfinish
 
-  RETURN
-END FUNCTION timetofinish
+  return
+end function timetofinish
 
 !=============================================================================
-LOGICAL FUNCTION timetosave(ifile)
+logical function timetosave(ifile)
 
   ! Save times are defined by either tsave(isavet(ifile),ifile) or 
   ! itsave(isaveit(ifile),ifile) or dtsave(ifile) or ditsave(ifile)
   ! Other conditions may be included.
 
-  USE constants
-  USE common_varibles
+  use constants
+  use common_varibles
 
-  INTEGER:: ifile
-  LOGICAL:: oksave
+  integer:: ifile
+  logical:: oksave
   !-----------------------------------------------------------------------------
 
-  oksave=.FALSE.
-  IF(t>=tsave(isavet(ifile),ifile))THEN
-     oksave=.TRUE.
+  oksave=.false.
+  if(t>=tsave(isavet(ifile),ifile))then
+     oksave=.true.
      isavet(ifile)=isavet(ifile)+1
-  END IF
-  IF(it==itsave(isaveit(ifile),ifile))THEN
-     oksave=.TRUE.
+  end if
+  if(it==itsave(isaveit(ifile),ifile))then
+     oksave=.true.
      isaveit(ifile)=isaveit(ifile)+1
-  END IF
-  IF(it==itsavelast(ifile)+ditsave(ifile)) oksave=.TRUE.
-  IF(t >=tsavelast(ifile) +dtsave(ifile) ) oksave=.TRUE.
-  IF(oksave)THEN
+  end if
+  if(it==itsavelast(ifile)+ditsave(ifile)) oksave=.true.
+  if(t >=tsavelast(ifile) +dtsave(ifile) ) oksave=.true.
+  if(oksave)then
      tsavelast(ifile) =t
      itsavelast(ifile)=it
-  END IF
+  end if
   timetosave=oksave
 
-  RETURN
-END FUNCTION timetosave
+  return
+end function timetosave
 
 !=============================================================================
-SUBROUTINE getdt_courant(w,ix^L)
+subroutine getdt_courant(w,ix^L)
 
   ! Ensure that the courant conditions is met
   ! Calculate the time for the  maximum propagation speed cmax_i to cross dx_i
@@ -660,64 +660,64 @@ SUBROUTINE getdt_courant(w,ix^L)
   ! In case of generalized coordinates dtcourant(idim) is correct due to the
   ! rotations while the value calculated here does not use a rotation.
 
-  USE constants
-  USE common_varibles
+  use constants
+  use common_varibles
 
-  DOUBLE PRECISION:: w(ixG^T,nw),cmax(ixG^T),courantmax,dtold
-  INTEGER:: ix^L,idim
-  LOGICAL:: new_cmax
+  double precision:: w(ixG^T,nw),cmax(ixG^T),courantmax,dtold
+  integer:: ix^L,idim
+  logical:: new_cmax
   !-----------------------------------------------------------------------------
 
-  oktest=INDEX(teststr,'getdt')>=1
+  oktest=index(teststr,'getdt')>=1
 
-  IF(oktest) WRITE(*,*)'getdt_courant'
+  if(oktest) write(*,*)'getdt_courant'
 
   dtold=dt
   dt=bigdouble
   courantmax=zero
-  new_cmax=.TRUE.
-  DO idim=1,ndim
-     IF(dtcourant(idim)<bigdouble)THEN
+  new_cmax=.true.
+  do idim=1,ndim
+     if(dtcourant(idim)<bigdouble)then
         ! If dtcourant(idim) is calculated, use it
 !!!      if(it==itmin+1)write(*,*)'second order correction in dt_courant!!!'
 !!!      dt=min(dt,dtcourant(idim),dtcourant(idim)**2/dtold,1.1*dtold)
-        dt=MIN(dt,dtcourant(idim))
-        IF(oktest) WRITE(*,*)'idim,dtcourant(idim)',idim,dtcourant(idim)
-     ELSE
+        dt=min(dt,dtcourant(idim))
+        if(oktest) write(*,*)'idim,dtcourant(idim)',idim,dtcourant(idim)
+     else
         ! dx>0, but cmax>=0 may actually be 0, thus we calculate 
         ! max(cmax/dx) rather than min(dx/cmax).
 
-        CALL getcmax(new_cmax,w,ix^L,idim,cmax)
-        courantmax=MAX(courantmax,MAXVAL(cmax(ix^S)/dx(ix^S,idim)))
+        call getcmax(new_cmax,w,ix^L,idim,cmax)
+        courantmax=max(courantmax,maxval(cmax(ix^S)/dx(ix^S,idim)))
 
-        IF(gencoord.AND.it==itmin+1.AND.verbose)WRITE(*,*)&
+        if(gencoord.and.it==itmin+1.and.verbose)write(*,*)&
              'Warning in GetDtCourant: for gencoord approx. only',&
              ', better use TVD-type methods'
-        IF(oktest) WRITE(*,*)'idim,cmax:',idim,cmax(ixtest^D)
-        IF(oktest) WRITE(*,*)'max(c/dx)',MAXVAL(cmax(ix^S)/dx(ix^S,idim))
-     ENDIF
-  END DO
-  {^IFMPI CALL mpiallreduce(courantmax,MPI_MAX)}
-  IF(INDEX(teststr,'dtdecline')<1)THEN
-     DO idim=1,ndim
+        if(oktest) write(*,*)'idim,cmax:',idim,cmax(ixtest^D)
+        if(oktest) write(*,*)'max(c/dx)',maxval(cmax(ix^S)/dx(ix^S,idim))
+     endif
+  end do
+  {^IFMPI call mpiallreduce(courantmax,MPI_MAX)}
+  if(index(teststr,'dtdecline')<1)then
+     do idim=1,ndim
         dtcourant(idim)=bigdouble
-     ENDDO
-  ENDIF
-  IF(courantmax>smalldouble) dt=MIN(dt,courantpar/courantmax)
+     enddo
+  endif
+  if(courantmax>smalldouble) dt=min(dt,courantpar/courantmax)
 
-  IF(oktest) WRITE(*,*)'GetDtCourant dt=',dt
+  if(oktest) write(*,*)'GetDtCourant dt=',dt
 
-  RETURN 
-END SUBROUTINE getdt_courant
+  return 
+end subroutine getdt_courant
 
 !=============================================================================
-DOUBLE PRECISION FUNCTION cputime()
+double precision function cputime()
 
   ! Return cputime in seconds as a double precision number.
   ! For g77 compiler replace F77_ with F77_ everywhere in this function
   ! so that f90tof77 does not touch the system_clock function.
 
-  INTEGER:: clock,clockrate,count_max !HPF_ !F77_
+  integer:: clock,clockrate,count_max !HPF_ !F77_
   !F77_ real:: etime,total,tarray(2)
   !F77_ external etime
   !HPF_ real:: timef
@@ -725,7 +725,7 @@ DOUBLE PRECISION FUNCTION cputime()
 
   cputime=-1.D0                             ! No timing
 
-  CALL SYSTEM_CLOCK(clock,clockrate,count_max) !HPF_ !F77_
+  call SYSTEM_clock(clock,clockrate,count_max) !HPF_ !F77_
   cputime=clock*(1.D0/clockrate)               !HPF_ !F77_
   !F77_ total = etime(tarray)
   !F77_ cputime=tarray(1)
@@ -734,8 +734,8 @@ DOUBLE PRECISION FUNCTION cputime()
   !cputime=second()   ! Cray CF77 or F90 (total CPU time for more CPU-s)
   !cputime=secondr()  ! Cray CF77 or F90 (elapsed time for more CPU-s)
 
-  RETURN
-END FUNCTION cputime
+  return
+end function cputime
 !=============================================================================
 ! end module vac
 !##############################################################################
