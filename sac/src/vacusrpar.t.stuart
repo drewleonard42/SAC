@@ -1,0 +1,17 @@
+!##############################################################################
+! include vacusrpar - gravity
+integer,parameter:: grav0_=neqpar+1
+integer,parameter:: grav^D_=neqpar+^D+1
+integer,parameter:: nu_=neqpar+4
+integer,parameter:: nspecialpar=^ND+2
+
+!CHARACTER(2) ,PARAMETER:: specialparname='nu'
+
+{^IFONED   character(5) ,parameter:: specialparname='grav1'}
+{^IFTWOD   character(11),parameter:: specialparname='grav1 grav2'}
+{^IFTHREED character(17),parameter:: specialparname='grav1 grav2 grav3'}
+
+
+
+! end include vacusrpar - gravity
+!##############################################################################
