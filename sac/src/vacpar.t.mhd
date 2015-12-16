@@ -1,0 +1,31 @@
+!##############################################################################
+! include vacpar - mhd
+
+! For MHD: density,momentum,energy,magnetic_field + adiabatic_index,resistivity
+
+character(3),parameter:: typephys='mhd'           ! VACPHYS module name
+character(9),parameter:: eqparname='gamma eta'    ! Equation parameter names
+
+integer,parameter:: rho_=1,m0_=rho_,m^C_=m0_+^C,e_=m^NC_+1! flow variables
+integer,parameter:: ee_=e_, b0_=e_,b^C_=b0_+^C            ! flow variables
+integer,parameter:: eb_=b^NC_+1, rhob_=eb_+1
+integer,parameter:: bg0_=rhob_, bg^C_=bg0_+^C
+integer,parameter:: nw=bg^NC_                              ! No. flow variables
+
+integer,parameter:: v0_=m0_, v^C_=m^C_, p_=e_, pp_=ee_    ! Primitive variables
+
+integer,parameter:: fastRW_=1,fastLW_=2,slowRW_=3,slowLW_=4 ! Characteristic
+integer,parameter:: entroW_=5,diverW_=6,alfvRW_=7,alfvLW_=8 ! waves
+integer,parameter:: extremeRW_=fastRW_,extremeLW_=fastLW_   ! Potential extrema
+
+integer,parameter:: mr_=m0_+r_,mphi_=m0_+phi_,mz_=m0_+z_  ! Polar var. names
+integer,parameter:: br_=b0_+r_,bphi_=b0_+phi_,bz_=b0_+z_
+
+integer,parameter:: nvector=2                             ! No. vector vars
+
+integer,parameter:: gamma_=1,eta_=2,neqpar=2              ! equation params
+integer,parameter:: divbcoeff_=1,divbconst_=2,divbbound_=3,nprocpar=3
+                                                          ! processing params
+
+! end include vacpar - mhd
+!##############################################################################
