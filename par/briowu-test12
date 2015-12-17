@@ -1,0 +1,32 @@
+&testlist
+/
+
+&filelist
+	filenameini='data/briowu-test12_np01.ini'
+	filename=   'data/briowu-test12.log',
+    		    'data/briowu-test12.out'
+	typefileout='binary'
+/
+
+&savelist
+	itsave(1,2)=0
+	ditsave=5,5
+/
+
+&stoplist
+	tmax=0.15
+/
+
+&methodlist
+	wnames='rhop m1 m2 Ep b1p b2p rhob Eb b1b b2b'
+	typefull=6*'cd4',4*'nul'
+	typelimiter='woodward'
+/
+
+&boundlist
+	typeB=	40*'cont'
+/
+
+&paramlist
+    courantpar=0.2
+/
