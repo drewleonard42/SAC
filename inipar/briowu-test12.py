@@ -17,8 +17,8 @@ header0 = 'briowu-test_mhd12\n'
 n_dims = 1
 dims = ['x']
 vars = ['rhop', 'm1', 'm2', 'Ep', 'b1p', 'b2p', 'rhob', 'Eb', 'b1b', 'b2b']
-eqpars = ['gamma', 'eta']
-eqparvals = [2.0, 0.0]
+eqpars = ['gamma', 'eta', 'nu']
+eqparvals = [2.0, 0.0, 1.0]
 
 # Define domain
 full_domain_size = 800,
