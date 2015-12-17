@@ -1,0 +1,33 @@
+&testlist
+/
+
+&filelist
+	filenameini='data/strongshock-test11_np01.ini'
+	filename=   'data/strongshock-test11.log',
+    		    'data/strongshock-test11.out'
+	typefileout='binary'
+/
+
+&savelist
+	itsave(1,2)=0
+	ditsave=5,5
+/
+
+&stoplist
+	tmax=0.15
+    dtmin=0.000000000000000000000000001
+/
+
+&methodlist
+	wnames='rhop m1 Ep b1p rhob Eb b1b'
+	typefull=4*'cd4',3*'nul'
+	typelimiter='woodward'
+/
+
+&boundlist
+	typeB=	28*'cont'
+/
+
+&paramlist
+    courantpar=0.2
+/
