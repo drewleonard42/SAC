@@ -1,0 +1,33 @@
+&testlist
+/
+
+&filelist
+	filenameini='data/orszagtang-test22_np0202.ini'
+    typefileini='ascii'
+	filename=   'data/orszagtang-test22.log',
+    		    'data/orszagtang-test22.out'
+	typefileout='binary'
+/
+
+&savelist
+	itsave(1,2)=0
+	ditsave=5,5
+/
+
+&stoplist
+	tmax=0.8
+/
+
+&methodlist
+	wnames='rhop m1 m2 Ep b1p b2p rhob Eb b1b b2b'
+	typefull=6*'cd4',4*'nul'
+	typelimiter='woodward'
+/
+
+&boundlist
+	typeB=	40*'periodic'
+/
+
+&paramlist
+    courantpar=0.2
+/
