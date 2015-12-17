@@ -45,8 +45,8 @@ F77FLG=-132 -dusty -Mnobounds
 #F90=/usr/local/mpich-gm2_PGI/bin/mpif90
 #F90=/usr/local/packages5/openmpi-pgi/bin/mpif90
 
-F90=/usr/local/mpi/pgi/openmpi/1.6.4/bin/mpif90
-F90FLG=-Mfreeform -Mnobounds
+F90 = mpif90
+F90FLG = -ffree-form
 
 #
 # Select one:
@@ -58,7 +58,7 @@ F77FLAGS= $(F77FLG) -O4 -w=all #        final compile
 #
 # Select one:
 #
-F90FLAGS= $(F90FLG) -O4 -w=all #        optimized
+F90FLAGS= $(F90FLG) -O4 #-w=all #        optimized
 #F90FLAGS= $(F90FLG) -O1 -C -w=all #    develop
 #F90FLAGS= $(F90FLG) -O0 -gline -C #            debugging
 
@@ -371,11 +371,11 @@ PREFOR=$(F90TOF90)
 ############### VACPreProcessor ################
 #For the dependency
 
-VACPP_=vacpp.pl
+VACPP_=./vacpp.pl
 
 # ... select one for the compilation rules:
 #
-VACPP =vacpp.pl #			
+VACPP =./vacpp.pl #			
 #VACPP =vacpp.pl -O #			Optimized shifts (always used by HPF)
 #VACPP =vacpp.pl -maxlen=72 #		Reduced maximum line length
 #VACPP =vacpp.pl -O -maxlen=72 #	Optimization and reduction 
