@@ -3,7 +3,7 @@ set -e
 # Get to correct directory and configure VAC
 cd ~/stusac/sac/src/
 make cleanall
-./setvac -d=22 -phi=0 -z=0 -g=264,264 -p=mhd -u=nul -on=cd,mpi, -off=tvd
+./setvac -d=22 -phi=0 -z=0 -g=264,264 -p=mhd -u=viscosity -on=cd,mpi, -off=tvd
 
 # Build
 make vac;

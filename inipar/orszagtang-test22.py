@@ -15,11 +15,10 @@ def prod(sequence):
 outname = 'data/orszagtang-test22_np0202.ini'
 header0 = 'orszagtang-test_mhd22\n'
 n_dims = 2
-n_dims2 = 2
 dims = ['x', 'y']
 vars = ['rhop', 'm1', 'm2', 'Ep', 'b1p', 'b2p', 'rhob', 'Eb', 'b1b', 'b2b']
-eqpars = ['gamma', 'eta']
-eqparvals = [5.0/3.0, 0.0]
+eqpars = ['gamma', 'eta', 'nu']
+eqparvals = [5.0/3.0, 0.0, 1.0]
 
 # Define domain
 full_domain_size = 256, 256
@@ -40,7 +39,7 @@ maxcoords = mincoords + 1/p # As above
 procid = 0
 for min, max in zip(mincoords, maxcoords):
     # Define file preamble
-    header = header0 + ' {: 6} {: .5E} {: 1} {: 1} {: 1}\n'.format(0, 0.0, n_dims, n_dims2, len(vars))
+    header = header0 + ' {: 6} {: .5E} {: 1} {: 1} {: 1}\n'.format(0, 0.0, n_dims, len(eqpars), len(vars))
     for x in domain_size: header += ' {}'.format(x)
     header += '\n'
     for x in eqparvals: header += ' {: .5E}'.format(x)
